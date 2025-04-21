@@ -42,7 +42,7 @@ body, html{
     margin: 6px;
     padding: 6px;
     border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.35);
+    background-color: rgba(0, 0, 0, 0.45);
 
     opacity: 0;
     transition: all .5s ease-in-out;
@@ -65,13 +65,13 @@ body, html{
 .text-shadow{
     text-shadow: 0 0 1px #000,
                  0 0 2px #000,
-                 0 0 3px rgba(0, 0, 0, 0.6),
-                 0 0 4px rgba(0, 0, 0, 0.6),
-                 0 0 5px rgba(0, 0, 0, 0.6),
-                -1px -1px 1px rgba(0, 0, 0, 0.6),
-                 1px -1px 1px rgba(0, 0, 0, 0.6),
-                -1px  1px 1px rgba(0, 0, 0, 0.6),
-                 1px  1px 1px rgba(0, 0, 0, 0.6);
+                 0 0 3px rgba(0, 0, 0, 0.65),
+                 0 0 4px rgba(0, 0, 0, 0.65),
+                 0 0 5px rgba(0, 0, 0, 0.65),
+                -1px -1px 1px rgba(0, 0, 0, 0.65),
+                 1px -1px 1px rgba(0, 0, 0, 0.65),
+                -1px  1px 1px rgba(0, 0, 0, 0.65),
+                 1px  1px 1px rgba(0, 0, 0, 0.65);
 }
 
 .nickname > *:first-child{

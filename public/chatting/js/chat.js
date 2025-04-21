@@ -49,7 +49,6 @@ const addMessageBox = (nickname, message, date = Date.now(), colorData = 'white'
         shadowSpan.textContent = nickname;
 
         const gradientSpan = document.createElement('span');
-        gradientSpan.className = 'gradient';
         gradientSpan.textContent = nickname;
 
         const direction = colorData.effectValue.direction.toLowerCase();
