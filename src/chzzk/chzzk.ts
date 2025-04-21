@@ -27,10 +27,10 @@ export class Chzzk{
             chat.on('connect', () => {
                 if(!once){
                     once = true;
-                    chat.requestRecentChat(30);
+                    chat.requestRecentChat(50);
                 }
             });
-            chat.connect()
+            await chat.connect()
             this._instance = new Chzzk(chat, client, channelId)
             return true
         }

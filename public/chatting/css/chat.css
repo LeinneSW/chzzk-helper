@@ -53,9 +53,18 @@ body, html{
     vertical-align: middle;
 }
 
-.nickname, .message{
+.nickname{
+    position: relative;
+    display: inline-block;
+}
+
+.message{
+    color: white;
+}
+
+.text-shadow{
     text-shadow: 0 0 1px #000,
-                 0 0 2px #000, 
+                 0 0 2px #000,
                  0 0 3px rgba(0, 0, 0, 0.6),
                  0 0 4px rgba(0, 0, 0, 0.6),
                  0 0 5px rgba(0, 0, 0, 0.6),
@@ -65,6 +74,16 @@ body, html{
                  1px  1px 1px rgba(0, 0, 0, 0.6);
 }
 
-.message{
-    color: white;
+.nickname > *:first-child{
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: black;
+    white-space: pre;
+    pointer-events: none;
+}
+
+.nickname > *:last-child{
+    position: relative;
+    white-space: pre;
 }

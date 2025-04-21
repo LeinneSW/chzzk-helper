@@ -2,7 +2,7 @@ import {app, BrowserWindow, Tray, dialog, Menu, ipcMain} from "electron";
 import {WebSocket} from 'ws'
 import path from 'path'
 import {Chzzk} from "./chzzk/chzzk";
-import {getCheatKeyColor, getUserColor, readResource, saveResource} from "./utils/utils";
+import {convertColorCode, initNicknameColorData, readResource, saveResource} from "./utils/utils";
 import {Web} from "./web/web";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
@@ -81,6 +81,23 @@ const createChattingTask = () => {
         }
     }))
     Chzzk.instance.chat.on('chat', chat => {
+        let colorData;
+        const streamingProperty = chat.profile.streamingProperty;
+        if(chat.profile.title){ // 스트리머, 매니저 등 특수 역할
+            colorData = chat.profile.title.color;
+        }else{
+            colorData = convertColorCode(
+                streamingProperty.nicknameColor.colorCode,
+                chat.profile.userIdHash,
+                Chzzk.instance.chat.chatChannelId
+            );
+        }
+
+        let emojiList = chat.extras?.emojis;
+        if(!emojiList || typeof emojiList !== 'object'){
+            emojiList = {};
+        }
+
         const badgeList: string[] = []
         if(chat.profile?.badge?.imageUrl){
             badgeList.push(chat.profile.badge.imageUrl)
@@ -96,18 +113,14 @@ const createChattingTask = () => {
             badgeList.push(viewerBadge.badge.imageUrl)
         }
 
-        const color = chat.profile.title?.color ??
-            (chat.profile.streamingProperty?.nicknameColor?.colorCode !== "CC000"
-            ? getCheatKeyColor(chat.profile.streamingProperty.nicknameColor.colorCode) 
-            : getUserColor(chat.profile.userIdHash + Chzzk.instance.chat.chatChannelId))
-        if(history.length >= 30){
+        if(history.length >= 50){
             history.shift();
         }
         const jsonStr = JSON.stringify({
             nickname: chat.profile.nickname,
-            color,
+            colorData,
             message: chat.message,
-            emojiList: chat.extras?.emojis || {},
+            emojiList,
             badgeList,
             date: chat.time
         })
@@ -289,6 +302,7 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
 }
 
 app.whenReady().then(async () => {
+    await initNicknameColorData();
     const window = new BrowserWindow({
         width: 800,
         height: 600,

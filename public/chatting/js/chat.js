@@ -1,4 +1,4 @@
-let client
+let client;
 
 const getRequestUrl = () => window.localStorage.getItem('wsURL') || location.host
 
@@ -8,7 +8,7 @@ const escapeHTML = (text) => text.replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-const addMessageBox = (nickname, message, date = Date.now(), color = 'white', emojiList = {}, badgeList = []) => {
+const addMessageBox = (nickname, message, date = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
     const messageBoxDiv = document.createElement('div')
     messageBoxDiv.className = 'message-box'
     messageBoxDiv.dataset.date = date + ''
@@ -24,14 +24,49 @@ const addMessageBox = (nickname, message, date = Date.now(), color = 'white', em
         messageBoxDiv.appendChild(badgeImg)
     }
 
-    const userSpan = document.createElement('span')
-    userSpan.className = 'nickname'
-    userSpan.innerText = nickname
-    userSpan.style.color = color
-    messageBoxDiv.appendChild(userSpan)
+    const userSpan = document.createElement('span');
+    userSpan.className = 'nickname';
+    const effectType = typeof colorData === 'string' ? 'NORMAL' : colorData.effectType;
+    if(effectType !== 'GRADATION'){
+        userSpan.textContent = nickname;
+        switch(effectType){
+            case 'HIGHLIGHT':
+                userSpan.style.color = colorData.lightRgbValue;
+                userSpan.style.backgroundColor = colorData.effectValue.lightRgbBackgroundValue;
+                break;
+            case 'STEALTH':
+                userSpan.style.color = 'transparent';
+                break;
+            default:
+                userSpan.style.color = colorData;
+                userSpan.className += ' text-shadow';
+                break;
+        }
+    }else{
+        // 그라데이션일 때만 shadow + gradient로 분리
+        const shadowSpan = document.createElement('span');
+        shadowSpan.className = 'text-shadow';
+        shadowSpan.textContent = nickname;
+
+        const gradientSpan = document.createElement('span');
+        gradientSpan.className = 'gradient';
+        gradientSpan.textContent = nickname;
+
+        const direction = colorData.effectValue.direction.toLowerCase();
+        const startColor = colorData.lightRgbValue;
+        const endColor = colorData.effectValue.lightRgbEndValue;
+        gradientSpan.style.backgroundImage = `linear-gradient(to ${direction}, ${startColor}, ${endColor})`;
+        gradientSpan.style.backgroundClip = 'text';
+        gradientSpan.style.webkitBackgroundClip = 'text';
+        gradientSpan.style.color = 'transparent';
+
+        userSpan.appendChild(shadowSpan);
+        userSpan.appendChild(gradientSpan);
+    }
+    messageBoxDiv.appendChild(userSpan);
 
     const messageSpan = document.createElement('span')
-    messageSpan.className = 'message'
+    messageSpan.className = 'message text-shadow'
 
     message = escapeHTML(message)
     for(const emojiName in emojiList){
@@ -50,7 +85,7 @@ const connect = () => {
     client.onmessage = e => {
         try{
             const json = JSON.parse(e.data.toString())
-            addMessageBox(json.nickname, json.message, json.date, json.color, json.emojiList, json.badgeList)
+            addMessageBox(json.nickname, json.message, json.date, json.colorData, json.emojiList, json.badgeList)
         }catch{}
     }
     client.onclose = () => setTimeout(() => connect(), 1000)
