@@ -25,44 +25,44 @@ body, html{
     background-color: rgba(0, 0, 0, 0);
 }
 
-img{
+.badge{
+    margin-right: 4px;
+    margin-bottom: .11em;
     width: var(--font-size);
     height: var(--font-size);
-    margin-bottom: .1em;
 }
 
-img + img{
-    margin-left: 2px;
+.emoji{
+    margin-right: 1px;
+    width: calc(var(--font-size) + 7px);
+    height: calc(var(--font-size) + 7px);
 }
 
 .message-box{
-    margin: 8px;
-    padding: 8px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.4);
+    margin: 6px;
+    padding: 6px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.35);
 
     opacity: 0;
     transition: all .5s ease-in-out;
+    line-height: calc(var(--font-size) + 9px); /* 이모지 크기를 맞추기 위해 사용 */
 }
 
-.message-box > *{
+.message-box *{
     vertical-align: middle;
-}
-
-.nickname{
-    padding-left: 4px;
 }
 
 .nickname, .message{
     text-shadow: 0 0 1px #000,
                  0 0 2px #000, 
-                 0 0 3px rgba(0, 0, 0, 0.7),
-                 0 0 4px rgba(0, 0, 0, 0.7),
-                 0 0 5px rgba(0, 0, 0, 0.7),
-                -1px -1px 1px rgba(0, 0, 0, 0.7),  
-                 1px -1px 1px rgba(0, 0, 0, 0.7),
-                -1px  1px 1px rgba(0, 0, 0, 0.7),
-                 1px  1px 1px rgba(0, 0, 0, 0.7);
+                 0 0 3px rgba(0, 0, 0, 0.6),
+                 0 0 4px rgba(0, 0, 0, 0.6),
+                 0 0 5px rgba(0, 0, 0, 0.6),
+                -1px -1px 1px rgba(0, 0, 0, 0.6),
+                 1px -1px 1px rgba(0, 0, 0, 0.6),
+                -1px  1px 1px rgba(0, 0, 0, 0.6),
+                 1px  1px 1px rgba(0, 0, 0, 0.6);
 }
 
 .message{

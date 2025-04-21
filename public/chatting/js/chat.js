@@ -20,6 +20,7 @@ const addMessageBox = (nickname, message, date = Date.now(), color = 'white', em
         const badgeImg = document.createElement('img')
         badgeImg.alt = 'badge'
         badgeImg.src = badgeUrl
+        badgeImg.className = 'badge'
         messageBoxDiv.appendChild(badgeImg)
     }
 
@@ -34,7 +35,7 @@ const addMessageBox = (nickname, message, date = Date.now(), color = 'white', em
 
     message = escapeHTML(message)
     for(const emojiName in emojiList){
-        message = message.replaceAll(`{:${emojiName}:}`, `<img src='${emojiList[emojiName]}' alt="emoji">`)
+        message = message.replaceAll(`{:${emojiName}:}`, `<img class='emoji' src='${emojiList[emojiName]}' alt="emoji">`)
     }
     messageSpan.innerHTML = ` : ${message}`
     messageBoxDiv.appendChild(messageSpan)
