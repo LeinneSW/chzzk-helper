@@ -8,10 +8,11 @@ const escapeHTML = (text) => text.replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-const addMessageBox = (nickname, message, date = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
+const addMessageBox = (profile, message, date = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
     const messageBoxDiv = document.createElement('div')
     messageBoxDiv.className = 'message-box'
-    messageBoxDiv.dataset.date = date + ''
+    messageBoxDiv.id = date + ''
+    messageBoxDiv.dataset.userIdHash = profile.userIdHash
     document.body.appendChild(messageBoxDiv)
 
     setTimeout(() => messageBoxDiv.style.opacity = '1', 50)
@@ -28,7 +29,7 @@ const addMessageBox = (nickname, message, date = Date.now(), colorData = 'white'
     userSpan.className = 'nickname';
     const effectType = typeof colorData === 'string' ? 'NORMAL' : colorData.effectType;
     if(effectType !== 'GRADATION'){
-        userSpan.textContent = nickname;
+        userSpan.textContent = profile.nickname;
         switch(effectType){
             case 'HIGHLIGHT':
                 userSpan.style.color = colorData.lightRgbValue;
@@ -46,10 +47,10 @@ const addMessageBox = (nickname, message, date = Date.now(), colorData = 'white'
         // 그라데이션일 때만 shadow + gradient로 분리
         const shadowSpan = document.createElement('span');
         shadowSpan.className = 'text-shadow';
-        shadowSpan.textContent = nickname;
+        shadowSpan.textContent = profile.nickname;
 
         const gradientSpan = document.createElement('span');
-        gradientSpan.textContent = nickname;
+        gradientSpan.textContent = profile.nickname;
 
         const direction = colorData.effectValue.direction.toLowerCase();
         const startColor = colorData.lightRgbValue;
@@ -83,8 +84,8 @@ const connect = () => {
     client.onopen = () => client.send(`CHATTING`)
     client.onmessage = e => {
         try{
-            const json = JSON.parse(e.data.toString())
-            addMessageBox(json.nickname, json.message, json.date, json.colorData, json.emojiList, json.badgeList)
+            const {profile, message, date, colorData, emojiList, badgeList} = JSON.parse(e.data.toString())
+            addMessageBox(profile, message, date, colorData, emojiList, badgeList)
         }catch{}
     }
     client.onclose = () => setTimeout(() => connect(), 1000)
@@ -106,7 +107,7 @@ window.addEventListener('load', () => {
             setTimeout(() => box?.remove(), 1000);
         }
         for(const box of messageBoxList){
-            if(current - box.dataset.date >= messageRemainSeconds){
+            if(current - box.id >= messageRemainSeconds){
                 box.style.opacity = '0'
             }
         }

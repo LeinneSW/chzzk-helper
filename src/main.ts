@@ -117,7 +117,10 @@ const createChattingTask = () => {
             history.shift();
         }
         const jsonStr = JSON.stringify({
-            nickname: chat.profile.nickname,
+            profile: {
+                nickname: chat.profile.nickname,
+                userIdHash: chat.profile.userIdHash,
+            },
             colorData,
             message: chat.message,
             emojiList,
