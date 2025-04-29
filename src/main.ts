@@ -254,7 +254,8 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
         icon,
         show: false,
         webPreferences: {
-            nodeIntegration: true,
+            contextIsolation: true,
+            nodeIntegration: false,
             defaultEncoding: 'utf-8',
             preload: path.join(__dirname, 'preload.js')
         },
