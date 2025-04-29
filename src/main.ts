@@ -389,9 +389,9 @@ app.whenReady().then(async () => {
 })
 
 // ipc method 정의
-ipcMain.on('getUserStatus', async (_) => {
+ipcMain.handle('getUserStatus', async (_) => {
     return await Chzzk.instance.client.user();
 })
-ipcMain.on('getLiveInfo', (_) => {
+ipcMain.handle('getLiveInfo', (_) => {
     return Chzzk.instance.liveInfo;
 })
