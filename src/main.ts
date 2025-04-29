@@ -36,16 +36,6 @@ const createVoteTask = () => {
 
 const emojiSocket: WebSocket[] = []
 const createEmojiTask = () => {
-    Web.instance.app.post('/req/test_emoji', (req, res) => {
-        res.sendStatus(200)
-        const jsonData = JSON.stringify({
-            emojiList: new Array(5).fill('d_47'),
-            emojiUrlList: {'d_47': 'https://ssl.pstatic.net/static/nng/glive/icon/b_07.gif'},
-        })
-        for(const client of emojiSocket){
-            client.send(jsonData)
-        }
-    })
     Web.instance.socket.on('connection', client => client.on('message', data => {
         if(data.toString('utf-8') === 'SHOW_EMOJI' && !emojiSocket.includes(client)){
             emojiSocket.push(client)
@@ -197,18 +187,6 @@ const createCheckFollowTask = async () => {
                     break;
             }
         });
-    });
-    Web.instance.app.post('/req/test_alert', (_, res) => {
-        res.sendStatus(200);
-        const json = JSON.stringify({
-            type: `팔로우`,
-            user: {
-                nickname: '테스트'
-            },
-        });
-        for(const client of alertSocket){
-            client.send(json);
-        }
     });
 
     try{
@@ -395,12 +373,27 @@ ipcMain.handle('getUserStatus', async (_) => {
 ipcMain.handle('getLiveInfo', (_) => {
     return Chzzk.instance.liveInfo;
 })
-ipcMain.handle('sendTestEmoji', (_) => {
-    const jsonData = JSON.stringify({
-        emojiList: new Array(5).fill('d_47'),
-        emojiUrlList: {'d_47': 'https://ssl.pstatic.net/static/nng/glive/icon/b_07.gif'},
-    })
-    for(const client of emojiSocket){
-        client.send(jsonData)
+ipcMain.handle('sendTestNotification', (_, type: string) => {
+    switch(type.toLowerCase()){
+        case 'emoji':
+            const jsonData = JSON.stringify({
+                emojiList: new Array(5).fill('d_47'),
+                emojiUrlList: {'d_47': 'https://ssl.pstatic.net/static/nng/glive/icon/b_07.gif'},
+            })
+            for(const client of emojiSocket){
+                client.send(jsonData)
+            }
+            break;
+        case 'follow':
+            const json = JSON.stringify({
+                type: `팔로우`,
+                user: {
+                    nickname: '테스트'
+                },
+            });
+            for(const client of alertSocket){
+                client.send(json);
+            }
+            break;
     }
 })

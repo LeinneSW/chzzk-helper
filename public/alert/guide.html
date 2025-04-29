@@ -20,18 +20,18 @@
                 new bootstrap.Modal(document.getElementById('alertModal')).show()
             })
         }
-        const requestFollowAlert = () => {
-            fetch(`http://127.0.0.1:54321/req/test_alert?type=follow`, {method: 'post'}).then(res => {
-                if(res.status === 200){
-                    document.getElementById('alertTitle').innerText = '팔로우 알림 요청'
-                    document.getElementById('modalContext').innerText = '테스트 팔로우 알림을 보냈습니다. 위젯을 확인해주세요.'
-                    new bootstrap.Modal(document.getElementById('alertModal')).show()
-                }
-            }).catch(() => {
+        const requestFollowAlert = async () => {
+            try{
+                await window.electron.sendTestNotification('follow');
+                document.getElementById('alertTitle').innerText = '팔로우 알림 요청'
+                document.getElementById('modalContext').innerText = '테스트 팔로우 알림을 보냈습니다. 위젯을 확인해주세요.'
+                new bootstrap.Modal(document.getElementById('alertModal')).show()
+            }catch(e){
+                console.error(e)
                 document.getElementById('alertTitle').innerText = '팔로우 알림 요청 실패'
                 document.getElementById('modalContext').innerText = '팔로우 알림 요청에 실패했습니다.'
                 new bootstrap.Modal(document.getElementById('alertModal')).show()
-            })
+            }
         }
     </script>
 </head>
