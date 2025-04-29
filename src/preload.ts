@@ -5,5 +5,5 @@ import {LiveInfo} from "./chzzk/types";
 contextBridge.exposeInMainWorld('electron', {
     getUserStatus: (): Promise<User> => ipcRenderer.invoke('getUserStatus'),
     getLiveInfo: (): Promise<LiveInfo> => ipcRenderer.invoke('getLiveInfo'),
-    sendTestEmoji: () => ipcRenderer.invoke('sendTestEmoji')
+    sendTestEmoji: (): Promise<void> => ipcRenderer.invoke('sendTestEmoji')
 });
