@@ -22,7 +22,7 @@
         }
         const requestEmoji = async () => {
             try{
-                await window.electron.sendTestEmoji()
+                await window.electron.sendTestNotification('emoji')
                 document.getElementById('alertTitle').innerText = '이모티콘 전송 완료'
                 document.getElementById('modalContext').innerText = '이모티콘을 전송했습니다. 위젯을 확인해주세요.'
                 new bootstrap.Modal(document.getElementById('alertModal')).show()
