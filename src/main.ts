@@ -71,19 +71,23 @@ const chattingSocket: WebSocket[] = []
 const createChattingTask = () => {
     let notice = JSON.stringify({notice: null});
     let history: string[] = [];
+
+    // chatting websocket 정의
     Web.instance.socket.on('connection', client => client.on('message', data => {
         const message = data.toString('utf-8')
         if(message === 'CHATTING' && !chattingSocket.includes(client)){
             chattingSocket.push(client)
             for(const h of history){
-                client.send(h);
+                client.send(h)
             }
             client.send(notice)
+            client.send(JSON.stringify({liveInfo: Chzzk.instance.liveInfo}));
             client.onclose = () => chattingSocket.splice(chattingSocket.indexOf(client), 1)
             return
         }
     }))
 
+    // chzzk client 정의
     const connectChatListener = (chat: ChzzkChat) => {
         history = []; // 새로 연결시 배열 초기화
         chat.on('notice', noticeData => {
@@ -161,6 +165,12 @@ const createChattingTask = () => {
     };
     connectChatListener(Chzzk.instance.chat);
     Chzzk.instance.connectChatListener.push(connectChatListener);
+    Chzzk.instance.changeLiveInfoListener.push(() => {
+        const jsonStr = JSON.stringify({liveInfo: Chzzk.instance.liveInfo});
+        for(const client of chattingSocket){
+            client.send(jsonStr)
+        }
+    })
 }
 
 let followCount: number = 0;
@@ -366,13 +376,17 @@ app.whenReady().then(async () => {
     })
 })
 
+// 웹 end-point 정의
+Web.instance.app.get('/user-info', async (_, res) => {
+    res.send(await Chzzk.instance.client.user());
+})
+Web.instance.app.all(/^\/fetch\/.*/, async (req, res) => {
+    // TODO: proxy 기능 구현 예정
+    console.log('req.url: ', req.path)
+    res.send({});
+})
+
 // ipc method 정의
-ipcMain.handle('getUserStatus', async (_) => {
-    return await Chzzk.instance.client.user();
-})
-ipcMain.handle('getLiveInfo', (_) => {
-    return Chzzk.instance.liveInfo;
-})
 ipcMain.handle('sendTestNotification', (_, type: string) => {
     switch(type.toLowerCase()){
         case 'emoji':

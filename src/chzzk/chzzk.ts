@@ -42,6 +42,20 @@ export class Chzzk{
         return false
     }
 
+    static isSameLiveInfo(a: LiveInfo, b: LiveInfo): boolean{
+        return (
+            a.title === b.title &&
+            a.channelId === b.channelId &&
+            a.chatChannelId === b.chatChannelId &&
+            a.viewership === b.viewership &&
+            a.isLive === b.isLive &&
+            a.category.id === b.category.id &&
+            a.category.type === b.category.type &&
+            a.category.name === b.category.name
+        );
+    }
+
+    public readonly changeLiveInfoListener: (() => void)[] = [];
     public readonly connectChatListener: ((chat: ChzzkChat) => void)[] = [];
 
     private _liveInfo: LiveInfo;
@@ -82,7 +96,8 @@ export class Chzzk{
                     listener(this._chat)
                 }
             }
-            this._liveInfo = {
+
+            const newLiveInfo = {
                 title: liveStatus.liveTitle,
                 channelId,
                 chatChannelId: liveStatus.chatChannelId,
@@ -92,6 +107,12 @@ export class Chzzk{
                     id: liveStatus.liveCategory || null,
                     type: liveStatus.categoryType,
                     name: liveStatus.liveCategoryValue || null,
+                }
+            }
+            if(!Chzzk.isSameLiveInfo(newLiveInfo, this._liveInfo)){
+                this._liveInfo = newLiveInfo;
+                for(const listener of this.changeLiveInfoListener){
+                    listener()
                 }
             }
         }, 10 * 1000);
