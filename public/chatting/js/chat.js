@@ -81,11 +81,20 @@ const connect = () => {
         return;
     }
     client = new WebSocket(`ws://${getRequestUrl()}/ws`)
-    client.onopen = () => client.send(`CHATTING`)
+    client.onopen = () => {
+        document.querySelectorAll('.message-box').forEach(element => element.remove())
+        client.send(`CHATTING`)
+    }
     client.onmessage = e => {
         try{
-            const {profile, message, date, colorData, emojiList, badgeList} = JSON.parse(e.data.toString())
-            addMessageBox(profile, message, date, colorData, emojiList, badgeList)
+            const {chat, notice} = JSON.parse(e.data.toString());
+            if(chat && typeof chat === 'object'){
+                const {profile, message, date, colorData, emojiList, badgeList} = chat;
+                addMessageBox(profile, message, date, colorData, emojiList, badgeList)
+            }
+            if(typeof notice === 'object'){ // null or object
+                // TODO: 공지 출력 기능
+            }
         }catch{}
     }
     client.onclose = () => setTimeout(() => connect(), 1000)

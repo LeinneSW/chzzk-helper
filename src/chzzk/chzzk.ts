@@ -1,5 +1,6 @@
-import {ChzzkChat, ChzzkClient, Followers} from "chzzk";
+import {ChzzkChat, ChzzkClient, Followers, LiveStatus} from "chzzk";
 import {delay} from "../utils/utils";
+import {LiveInfo} from "./types";
 
 export class Chzzk{
     private static _instance: Chzzk
@@ -22,30 +23,91 @@ export class Chzzk{
                     await delay(1000)
                 }
             }
-            const chat = client.chat({channelId, pollInterval: 10 * 1000})
-            let once = false;
-            chat.on('connect', () => {
-                if(!once){
-                    once = true;
-                    chat.requestRecentChat(50);
+
+            let liveStatus: LiveStatus | undefined;
+            while(!liveStatus){
+                try{
+                    liveStatus = await client.live.status(channelId)
+                }catch{
+                    await delay(1000)
                 }
-            });
+            }
+
+            const chat = client.chat(liveStatus.chatChannelId)
+            chat.on('connect', () => chat.requestRecentChat(50));
             await chat.connect()
-            this._instance = new Chzzk(chat, client, channelId)
+            this._instance = new Chzzk(channelId, liveStatus, chat, client)
             return true
         }
         return false
     }
 
+    public readonly connectChatListener: ((chat: ChzzkChat) => void)[] = [];
+
+    private _liveInfo: LiveInfo;
+    private chatInterval: NodeJS.Timeout;
+
     private constructor(
-        public readonly chat: ChzzkChat,
+        channelId: string,
+        liveStatus: LiveStatus,
+        private _chat: ChzzkChat,
         public readonly client: ChzzkClient,
-        public readonly channelId: string
-    ){}
+    ){
+        this._liveInfo = {
+            title: liveStatus.liveTitle,
+            channelId,
+            chatChannelId: liveStatus.chatChannelId,
+            viewership: liveStatus.concurrentUserCount,
+            isLive: liveStatus.status === 'OPEN',
+            category: {
+                id: liveStatus.liveCategory || null,
+                type: liveStatus.categoryType,
+                name: liveStatus.liveCategoryValue || null,
+            }
+        }
+        this.chatInterval = setInterval(async () => {
+            const liveStatus = await client.live.status(channelId);
+            if(!liveStatus){
+                return;
+            }
+            if(liveStatus.chatChannelId && liveStatus.chatChannelId !== this._liveInfo.chatChannelId){
+                if(this._chat.connected){
+                    this.chat.disconnect().catch((e) => console.error(e))
+                }
+                this._chat = client.chat(liveStatus.chatChannelId)
+                this._chat.on('connect', () => this._chat.requestRecentChat(50));
+                this._chat.connect().catch((e) => console.error(e))
+
+                for(const listener of this.connectChatListener){
+                    listener(this._chat)
+                }
+            }
+            this._liveInfo = {
+                title: liveStatus.liveTitle,
+                channelId,
+                chatChannelId: liveStatus.chatChannelId,
+                viewership: liveStatus.concurrentUserCount,
+                isLive: liveStatus.status === 'OPEN',
+                category: {
+                    id: liveStatus.liveCategory || null,
+                    type: liveStatus.categoryType,
+                    name: liveStatus.liveCategoryValue || null,
+                }
+            }
+        }, 10 * 1000);
+    }
+
+    get chat(): ChzzkChat{
+        return this._chat
+    }
+
+    get liveInfo(): LiveInfo{
+        return {...this._liveInfo} // 데이터 조작 방지를 위해 복제
+    }
 
     async getFollowerData(size: number = 10): Promise<Followers>{
         try{
-            const data = await this.client.manage.followers(this.channelId, {size})
+            const data = await this.client.manage.followers(this.liveInfo.channelId, {size})
             if(data){
                 return data
             }

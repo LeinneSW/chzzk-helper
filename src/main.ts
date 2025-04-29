@@ -2,10 +2,11 @@ import {app, BrowserWindow, Tray, dialog, Menu, ipcMain} from "electron";
 import {WebSocket} from 'ws'
 import path from 'path'
 import {Chzzk} from "./chzzk/chzzk";
-import {convertColorCode, initNicknameColorData, readResource, saveResource} from "./utils/utils";
+import {convertColorCode, initNicknameColorData, isObject, readResource, saveResource} from "./utils/utils";
 import {Web} from "./web/web";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
+import {ChzzkChat} from "chzzk";
 
 const voteSocket: WebSocket[] = []
 const createVoteTask = () => {
@@ -17,15 +18,20 @@ const createVoteTask = () => {
             return
         }
     }))
-    Chzzk.instance.chat.on('chat', chat => {
-        const jsonData = JSON.stringify({
-            user: chat.profile,
-            message: chat.message,
+
+    const connectChatListener = (chat: ChzzkChat) => {
+        chat.on('chat', chat => {
+            const jsonData = JSON.stringify({
+                user: chat.profile,
+                message: chat.message,
+            })
+            for(const client of voteSocket){
+                client.send(jsonData)
+            }
         })
-        for(const client of voteSocket){
-            client.send(jsonData)
-        }
-    })
+    }
+    connectChatListener(Chzzk.instance.chat);
+    Chzzk.instance.connectChatListener.push(connectChatListener)
 }
 
 const emojiSocket: WebSocket[] = []
@@ -46,28 +52,34 @@ const createEmojiTask = () => {
             client.on('close', () => emojiSocket.splice(emojiSocket.indexOf(client), 1))
         }
     }))
-    Chzzk.instance.chat.on('chat', chat => {
-        const emojiUrlList = chat.extras?.emojis
-        if(!emojiUrlList || Object.keys(emojiUrlList).length < 1){
-            return
-        }
 
-        let match
-        const emojiList = []
-        const regex = /{:([\w]*):}/g
-        while((match = regex.exec(chat.message)) !== null){
-            emojiList.push(match[1])
-        }
+    const connectChatListener = (chzzkChat: ChzzkChat) => {
+        chzzkChat.on('chat', chat => {
+            const emojiUrlList = chat.extras?.emojis
+            if(!emojiUrlList || Object.keys(emojiUrlList).length < 1){
+                return
+            }
 
-        const jsonData = JSON.stringify({emojiList, emojiUrlList})
-        for(const client of emojiSocket){
-            client.send(jsonData)
-        }
-    })
+            let match
+            const emojiList = []
+            const regex = /{:([\w]*):}/g
+            while((match = regex.exec(chat.message)) !== null){
+                emojiList.push(match[1])
+            }
+
+            const jsonData = JSON.stringify({emojiList, emojiUrlList})
+            for(const client of emojiSocket){
+                client.send(jsonData)
+            }
+        })
+    };
+    connectChatListener(Chzzk.instance.chat);
+    Chzzk.instance.connectChatListener.push(connectChatListener)
 }
 
 const chattingSocket: WebSocket[] = []
 const createChattingTask = () => {
+    let notice = JSON.stringify({notice: null});
     let history: string[] = [];
     Web.instance.socket.on('connection', client => client.on('message', data => {
         const message = data.toString('utf-8')
@@ -76,62 +88,89 @@ const createChattingTask = () => {
             for(const h of history){
                 client.send(h);
             }
+            client.send(notice)
             client.onclose = () => chattingSocket.splice(chattingSocket.indexOf(client), 1)
             return
         }
     }))
-    Chzzk.instance.chat.on('chat', chat => {
-        let colorData;
-        const streamingProperty = chat.profile.streamingProperty;
-        if(chat.profile.title){ // 스트리머, 매니저 등 특수 역할
-            colorData = chat.profile.title.color;
-        }else{
-            colorData = convertColorCode(
-                streamingProperty.nicknameColor.colorCode,
-                chat.profile.userIdHash,
-                Chzzk.instance.chat.chatChannelId
-            );
-        }
 
-        let emojiList = chat.extras?.emojis;
-        if(!emojiList || typeof emojiList !== 'object'){
-            emojiList = {};
-        }
-
-        const badgeList: string[] = []
-        if(chat.profile?.badge?.imageUrl){
-            badgeList.push(chat.profile.badge.imageUrl)
-        }
-        if(chat.profile.streamingProperty?.realTimeDonationRanking?.badge?.imageUrl){
-            badgeList.push(chat.profile.streamingProperty.realTimeDonationRanking.badge.imageUrl)
-        }
-        if(chat.profile.streamingProperty?.subscription?.badge?.imageUrl){
-            badgeList.push(chat.profile.streamingProperty.subscription.badge.imageUrl)
-        }
-        // @ts-ignore
-        for(const viewerBadge of chat.profile.viewerBadges){
-            badgeList.push(viewerBadge.badge.imageUrl)
-        }
-
-        if(history.length >= 50){
-            history.shift();
-        }
-        const jsonStr = JSON.stringify({
-            profile: {
-                nickname: chat.profile.nickname,
-                userIdHash: chat.profile.userIdHash,
-            },
-            colorData,
-            message: chat.message,
-            emojiList,
-            badgeList,
-            date: chat.time
+    const connectChatListener = (chat: ChzzkChat) => {
+        history = []; // 새로 연결시 배열 초기화
+        chat.on('notice', noticeData => {
+            let jsonStr;
+            if(isObject(noticeData)){
+                jsonStr = JSON.stringify({
+                    notice: {
+                        message: noticeData.message,
+                        profile: noticeData.profile,
+                        registerProfile: noticeData.extras.registerProfile,
+                    }
+                })
+            }else{
+                jsonStr = JSON.stringify({notice: null})
+            }
+            notice = jsonStr;
+            for(const client of chattingSocket){
+                client.send(jsonStr)
+            }
         })
-        history.push(jsonStr)
-        for(const client of chattingSocket){
-            client.send(jsonStr)
-        }
-    })
+        chat.on('chat', chat => {
+            let colorData;
+            const streamingProperty = chat.profile.streamingProperty;
+            if(chat.profile.title){ // 스트리머, 매니저 등 특수 역할
+                colorData = chat.profile.title.color;
+            }else{
+                colorData = convertColorCode(
+                    streamingProperty.nicknameColor.colorCode,
+                    chat.profile.userIdHash,
+                    Chzzk.instance.liveInfo.chatChannelId
+                );
+            }
+
+            let emojiList = chat.extras?.emojis;
+            if(!emojiList || typeof emojiList !== 'object'){
+                emojiList = {};
+            }
+
+            const badgeList: string[] = []
+            if(chat.profile?.badge?.imageUrl){
+                badgeList.push(chat.profile.badge.imageUrl)
+            }
+            if(chat.profile.streamingProperty?.realTimeDonationRanking?.badge?.imageUrl){
+                badgeList.push(chat.profile.streamingProperty.realTimeDonationRanking.badge.imageUrl)
+            }
+            if(chat.profile.streamingProperty?.subscription?.badge?.imageUrl){
+                badgeList.push(chat.profile.streamingProperty.subscription.badge.imageUrl)
+            }
+            // @ts-ignore
+            for(const viewerBadge of chat.profile.viewerBadges){
+                badgeList.push(viewerBadge.badge.imageUrl)
+            }
+
+            if(history.length >= 50){
+                history.shift();
+            }
+            const jsonStr = JSON.stringify({
+                chat: {
+                    profile: {
+                        nickname: chat.profile.nickname,
+                        userIdHash: chat.profile.userIdHash,
+                    },
+                    colorData,
+                    message: chat.message,
+                    emojiList,
+                    badgeList,
+                    date: chat.time
+                },
+            })
+            history.push(jsonStr)
+            for(const client of chattingSocket){
+                client.send(jsonStr)
+            }
+        })
+    };
+    connectChatListener(Chzzk.instance.chat);
+    Chzzk.instance.connectChatListener.push(connectChatListener);
 }
 
 let followCount: number = 0;
@@ -348,4 +387,11 @@ app.whenReady().then(async () => {
         message: '로그인이 필요한 서비스입니다.\n로그인 후 진행해주세요.'
     })
 })
-ipcMain.on('alert', (_, message: string = '', title?: string) => dialog.showMessageBox({type: 'info', title, message}))
+
+// ipc method 정의
+ipcMain.on('getUserStatus', async (_) => {
+    return await Chzzk.instance.client.user();
+})
+ipcMain.on('getLiveInfo', (_) => {
+    return Chzzk.instance.liveInfo;
+})
