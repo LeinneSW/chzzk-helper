@@ -395,3 +395,12 @@ ipcMain.handle('getUserStatus', async (_) => {
 ipcMain.handle('getLiveInfo', (_) => {
     return Chzzk.instance.liveInfo;
 })
+ipcMain.handle('sendTestEmoji', (_) => {
+    const jsonData = JSON.stringify({
+        emojiList: new Array(5).fill('d_47'),
+        emojiUrlList: {'d_47': 'https://ssl.pstatic.net/static/nng/glive/icon/b_07.gif'},
+    })
+    for(const client of emojiSocket){
+        client.send(jsonData)
+    }
+})
