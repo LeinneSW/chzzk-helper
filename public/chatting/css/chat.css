@@ -27,15 +27,16 @@ body, html{
 
 .badge{
     margin-right: 4px;
-    margin-bottom: .11em;
+    margin-bottom: .15em;
     width: var(--font-size);
     height: var(--font-size);
 }
 
 .emoji{
     margin-right: 1px;
-    width: calc(var(--font-size) + 7px);
-    height: calc(var(--font-size) + 7px);
+    margin-bottom: .17em;
+    width: calc(var(--font-size) + 6px);
+    height: calc(var(--font-size) + 6px);
 }
 
 .message-box{
