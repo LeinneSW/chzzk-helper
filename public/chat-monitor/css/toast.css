@@ -1,0 +1,42 @@
+#toast-container {
+    position: fixed;
+    inset: 0; /* 전체 영역 차지 */
+    display: flex;
+    justify-content: center; /* 가로 중앙 */
+    align-items: flex-start; /* 세로 위쪽 */
+    pointer-events: none; /* 클릭 무시 */
+    padding-top: calc(env(safe-area-inset-top, 12px) + 10px);
+    z-index: 9999;
+}
+
+/* ───── 각 토스트 메시지 ───── */
+.toast {
+    pointer-events: auto;
+    background: rgba(55, 55, 55, .92);
+    color: #fff;
+    padding: .7rem 1.2rem;
+    border-radius: .5rem;
+    font-size: .85rem;
+    max-width: 80vw;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .15);
+    opacity: 0; /* 애니메이션 시작값 */
+    transform: translateY(-16px) scale(.96);
+    animation: slideFadeIn .4s cubic-bezier(.22, 1, .36, 1) forwards,
+    slideFadeOut .35s cubic-bezier(.55, .06, .68, .19) forwards 2.65s; /* 3s 유지 */
+}
+
+/* 등장 */
+@keyframes slideFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 퇴장 */
+@keyframes slideFadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(-16px) scale(.96);
+    }
+}

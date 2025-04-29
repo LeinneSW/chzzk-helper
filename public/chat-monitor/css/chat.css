@@ -1,0 +1,133 @@
+:root{
+    --font-size: 30px;
+    --font-spacing: 0;
+}
+
+@font-face{
+    font-family: 'Pretendard-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+*{
+    font-family: 'Pretendard-Regular', sans-serif;
+    box-sizing: border-box;
+    font-size: var(--font-size);
+}
+
+body, html{
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#app{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c1c1e;
+}
+
+#chat-container{
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.badge{
+    margin-right: 3px;
+    width: var(--font-size);
+    height: var(--font-size);
+}
+
+.emoji{
+    width: calc(var(--font-size) + 8px);
+    height: calc(var(--font-size) + 8px);
+}
+
+.message-box{
+    padding: 0 4px;
+    line-height: calc(var(--font-size) + 10px); /* 이모지 크기를 맞추기 위해 사용 */
+}
+
+.select-notice > .message-box:hover{
+    background-color: #414141;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: .35s;
+}
+
+.message-box:first-child{
+    margin-top: 4px;
+}
+
+.message-box + .message-box{
+    padding-top: var(--font-spacing);
+}
+
+.message-box:last-child{
+    margin-bottom: 4px;
+}
+
+.message-box *{
+    vertical-align: middle;
+}
+
+.time{
+    color: #c1c1c1;
+    padding-right: 5px;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+.message{
+    color: white;
+}
+
+#notice-container{
+    position: absolute;
+    top: 68px;
+    left: 10px;
+    right: 10px;
+    padding: 10px;
+
+    color: white;
+    background-color: #222222;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 0 rgb(0 0 0 / 40%)
+}
+
+#notice-container *{
+    font-size: var(--font-size);
+}
+
+#notice-container *:last-child{
+    font-weight: bold;
+}
+
+.hide{
+    display: none !important;
+}
+
+/* 스크롤바 트랙 (배경) */
+::-webkit-scrollbar-track{
+    background: transparent;
+}
+
+/* 스크롤바 움직이는 부분 (thumb) */
+::-webkit-scrollbar-thumb{
+    background-color: rgba(200, 200, 200, 0.4); /* 밝은 회색 스크롤바 */
+}
+
+/* 스크롤바 모서리 (corner) 없애기 */
+::-webkit-scrollbar-corner{
+    background: transparent;
+}
+
+/* Firefox */
+html{
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 200, 200, 0.4) transparent; /* thumb / track */
+}
