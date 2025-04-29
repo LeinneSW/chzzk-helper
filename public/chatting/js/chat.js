@@ -1,4 +1,5 @@
 let client;
+let chatChannelId = '';
 
 const getRequestUrl = () => window.localStorage.getItem('wsURL') || location.host
 
@@ -87,7 +88,16 @@ const connect = () => {
     }
     client.onmessage = e => {
         try{
-            const {chat, notice} = JSON.parse(e.data.toString());
+            const {chat, notice, liveInfo} = JSON.parse(e.data.toString());
+            const newChatChannelId = liveInfo?.chatChannelId
+            if(newChatChannelId && newChatChannelId !== chatChannelId){
+                if(chatChannelId){
+                    // 채팅 ID가 달라진 경우 새 채팅 채널에 접속했다는 뜻임
+                    document.querySelectorAll('body > .message-box').forEach(element => element.remove())
+                }
+                chatChannelId = newChatChannelId;
+            }
+
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
