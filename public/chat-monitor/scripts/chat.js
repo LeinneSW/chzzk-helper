@@ -88,7 +88,7 @@ window.addEventListener('load', async () => {
 
                 chatContainer.onclick = () => {};
                 chatContainer.classList.remove('select-notice');
-                /*fetch('/notice', {
+                fetch('/notice', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -106,7 +106,7 @@ window.addEventListener('load', async () => {
                             showToast('공지 등록 실패! 권한이 없습니다.')
                         }
                     })
-                    .catch(() => showToast('공지 등록 실패! 권한이 없습니다.'))*/
+                    .catch(() => showToast('공지 등록 실패! 권한이 없습니다.'))
             };
         }else{
             chatContainer.onclick = () => {};
