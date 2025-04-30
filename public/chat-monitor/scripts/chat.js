@@ -30,7 +30,6 @@ const connect = () => {
                 noticeContainer.classList.remove('hide');
                 noticeContainer.innerHTML = `<div>${notice.registerProfile.nickname}님이 고정</div><div>${notice.message}</div>`;
                 noticeContainer.onclick = () => {
-                    showToast('공지 제거 기능은 아직 구현중입니다.')
                     fetch('/notice', {
                         method: "DELETE",
                         headers: {
