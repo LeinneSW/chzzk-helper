@@ -28,7 +28,7 @@ const createVoteTask = () => {
         }catch{}
     }))
 
-    const connectChatListener = (chat: ChzzkChat) => {
+    const chatListener = (chat: ChzzkChat) => {
         chat.on('chat', chat => {
             const jsonData = JSON.stringify({
                 user: chat.profile,
@@ -39,8 +39,8 @@ const createVoteTask = () => {
             }
         })
     }
-    connectChatListener(ChzzkService.instance.chat);
-    ChzzkService.instance.connectChatListener.push(connectChatListener)
+    chatListener(ChzzkService.instance.chat);
+    ChzzkService.instance.on('chat', chatListener);
 }
 
 const emojiSocket: WebSocket[] = []
@@ -52,7 +52,7 @@ const createEmojiTask = () => {
         }
     }))
 
-    const connectChatListener = (chzzkChat: ChzzkChat) => {
+    const chatListener = (chzzkChat: ChzzkChat) => {
         chzzkChat.on('chat', chat => {
             const emojiUrlList = chat.extras?.emojis
             if(!emojiUrlList || Object.keys(emojiUrlList).length < 1){
@@ -72,8 +72,8 @@ const createEmojiTask = () => {
             }
         })
     };
-    connectChatListener(ChzzkService.instance.chat);
-    ChzzkService.instance.connectChatListener.push(connectChatListener)
+    chatListener(ChzzkService.instance.chat)
+    ChzzkService.instance.on('chat', chatListener)
 }
 
 const chattingSocket: WebSocket[] = []
@@ -97,7 +97,7 @@ const createChattingTask = () => {
     }))
 
     // chzzk client 정의
-    const connectChatListener = (chat: ChzzkChat) => {
+    const chatListener = (chat: ChzzkChat) => {
         history = []; // 새로 연결시 배열 초기화
         chat.on('notice', noticeData => {
             let jsonStr;
@@ -172,9 +172,9 @@ const createChattingTask = () => {
             }
         })
     };
-    connectChatListener(ChzzkService.instance.chat);
-    ChzzkService.instance.connectChatListener.push(connectChatListener);
-    ChzzkService.instance.changeLiveInfoListener.push((liveInfo) => {
+    chatListener(ChzzkService.instance.chat);
+    ChzzkService.instance.on('chat', chatListener);
+    ChzzkService.instance.on('liveInfo', (liveInfo) => {
         const jsonStr = JSON.stringify({liveInfo});
         for(const client of chattingSocket){
             client.send(jsonStr)
@@ -374,7 +374,9 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
         switch(response){
             case 1:
                 window.hide()
+                break;
             case 0:
+                window.hide()
                 event.preventDefault()
                 break
             default:

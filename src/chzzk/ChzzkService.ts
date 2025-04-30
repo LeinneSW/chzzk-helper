@@ -5,9 +5,7 @@ import {LiveInfo} from "../models/LiveInfo";
 
 export type ChzzkEvents = {
     chat: ChzzkChat;
-    connectChat: ChzzkChat;
     liveInfo: LiveInfo;
-    followers: Followers;
 };
 
 export class ChzzkService{
@@ -56,9 +54,6 @@ export class ChzzkService{
     private poll: NodeJS.Timeout;
     private readonly emitter = mitt<ChzzkEvents>();
 
-    readonly connectChatListener: ((chat: ChzzkChat) => void)[] = [];
-    readonly changeLiveInfoListener: ((liveInfo: LiveInfo) => void)[] = [];
-
     // event listener
     readonly on = this.emitter.on;
 
@@ -95,9 +90,7 @@ export class ChzzkService{
                 await this._chat.disconnect()
             }
             this._chat = this.client.chat(liveStatus.chatChannelId)
-            for(const listener of this.connectChatListener){
-                listener(this._chat)
-            }
+            this.emitter.emit('chat', this._chat)
 
             this._chat.on('connect', () => this._chat.requestRecentChat(50));
             this._chat.connect().catch((e) => console.error(e))
@@ -117,9 +110,7 @@ export class ChzzkService{
         }
         if(JSON.stringify(newLiveInfo) !== JSON.stringify(this._liveInfo)){
             this._liveInfo = newLiveInfo;
-            for(const listener of this.changeLiveInfoListener){
-                listener(this._liveInfo)
-            }
+            this.emitter.emit('liveInfo', this._liveInfo)
         }
     }
 
