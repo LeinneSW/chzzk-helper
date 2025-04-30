@@ -1,4 +1,4 @@
-let liveInfo;
+let currentLiveInfo;
 
 const escapeHTML = (text) => text.replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -82,24 +82,24 @@ const updateLiveInfo = (newLiveInfo) => {
         return;
     }
 
-    if(liveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== liveInfo?.chatChannelId){
+    if(currentLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== currentLiveInfo?.chatChannelId){
         // 채팅 ID가 달라진 경우 새 채팅 채널에 접속했다는 뜻임
         document.querySelectorAll('.message-box').forEach(element => element.remove())
     }
 
-    liveInfo = newLiveInfo;
+    currentLiveInfo = newLiveInfo;
     const avatar = document.getElementById('streamer-avatar');
-    avatar.className = liveInfo.isLive ? '' : 'offline';
+    avatar.className = currentLiveInfo.isLive ? '' : 'offline';
 
     const divider = document.getElementById('divider');
     const userCount = document.getElementById('user-count');
     const liveTitle = document.getElementById('live-title');
     const liveCategory = document.getElementById('live-category');
-    if(liveInfo.isLive){
+    if(currentLiveInfo.isLive){
         divider.textContent = '|';
-        liveTitle.textContent = liveInfo.title;
-        liveCategory.textContent = liveInfo.category.name;
-        userCount.innerHTML = `<div></div>${liveInfo.viewership}`;
+        liveTitle.textContent = currentLiveInfo.title;
+        liveCategory.textContent = currentLiveInfo.category.name;
+        userCount.innerHTML = `<div></div>${currentLiveInfo.viewership}`;
     }else{
         divider.textContent = '';
         liveTitle.textContent = '';

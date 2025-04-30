@@ -36,7 +36,7 @@ const connect = () => {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            channelId: chzzkChat?.chatChannelId,
+                            channelId: currentLiveInfo.chatChannelId,
                         })
                     })
                         .then(async (res) => {
@@ -94,10 +94,10 @@ window.addEventListener('load', async () => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        channelId: chzzkChat?.chatChannelId,
+                        channelId: currentLiveInfo?.chatChannelId,
                         messageTime: +messageBox.id,
                         messageUserIdHash: messageBox.dataset.userIdHash,
-                        streamingChannelId: liveInfo?.channelId
+                        streamingChannelId: currentLiveInfo?.channelId
                     })
                 })
                     .then(async (res) => {
