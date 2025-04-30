@@ -7,7 +7,10 @@ const connect = () => {
         return;
     }
     client = new WebSocket(`ws://${getRequestUrl()}/ws`)
-    client.onopen = () => client.send(`CHATTING`)
+    client.onopen = () => {
+        clearChatBox();
+        client.send(`CHATTING`)
+    }
     client.onmessage = e => {
         try{
             const {chat, notice, liveInfo} = JSON.parse(e.data.toString());
