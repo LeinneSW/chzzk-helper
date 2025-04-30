@@ -1,6 +1,6 @@
 import {contextBridge, ipcRenderer} from "electron";
 import {User} from "chzzk/dist/api/user";
-import {LiveInfo} from "./chzzk/types";
+import {LiveInfo} from "./models/LiveInfo";
 
 contextBridge.exposeInMainWorld('electron', {
     getUserStatus: (): Promise<User> => ipcRenderer.invoke('getUserStatus'),
