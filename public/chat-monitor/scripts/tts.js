@@ -61,14 +61,15 @@ const normalizeRepeatedText = (text) => {
     return text;
 }
 
-const addTTSQueue = (text, nickname) => {
-    if(localStorage.getItem('enableTTS') !== '1'){
+const addTTSQueue = (text, profile) => {
+    if(localStorage.getItem('enableTTS') === '0'){
         return;
     }
 
     // 특정 닉네임, 문자열 제외 기능
+    const nickname = profile?.nickname || '익명'
     if(
-        (options.name.enabled && nickname != null && options.name.regex.test(nickname)) ||
+        (options.name.enabled && options.name.regex.test(nickname)) ||
         (options.messageSkip.enabled && options.messageSkip.regex.test(text))
     ){
         return;

@@ -17,6 +17,7 @@ const connect = () => {
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
+                addTTSQueue(message, profile)
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
             }
             if(typeof notice !== 'object') { // null or object
