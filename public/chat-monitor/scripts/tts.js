@@ -2,7 +2,7 @@ const ttsQueue = [];
 let isPlaying = false;
 
 const emojiRegex = /\p{Extended_Pictographic}/gu; // 이모지 구분 정규식
-const options = (() => {
+const ttsSettings = (() => {
     const defaultOptions = {
         name: { // 이름 필터링(특정 규칙의 이름은 TTS가 읽지 않음)
             enabled: true,
@@ -18,8 +18,10 @@ const options = (() => {
         },
         maximumPlayTime: 0, // 1회 채팅당 최대 재생 시간, 초단위
     };
+
+    const storageData = localStorage.getItem('ttsSettings') || '';
     try{
-        const {name, message, messageSkip, maximumPlayTime} = JSON.parse(localStorage.getItem('options') || '{}');
+        const {name, message, messageSkip, maximumPlayTime} = JSON.parse(storageData);
         typeof name?.enabled == 'boolean' && (defaultOptions.name.enabled = name.enabled);
         typeof name?.regex == 'string' && (defaultOptions.name.regex = name.regex);
 
@@ -33,12 +35,15 @@ const options = (() => {
     }catch(e){
         console.error(e);
     }
+    if(!storageData){
+        localStorage.setItem('ttsSettings', JSON.stringify(defaultOptions));
+    }
     return defaultOptions;
 })();
 
 const saveOptions = () => {
     try{
-        localStorage.setItem('options', JSON.stringify(options));
+        localStorage.setItem('ttsSettings', JSON.stringify(ttsSettings));
     }catch(e){
         console.error(e);
     }
@@ -69,14 +74,14 @@ const addTTSQueue = (text, profile) => {
     // 특정 닉네임, 문자열 제외 기능
     const nickname = profile?.nickname || '익명'
     if(
-        (options.name.enabled && options.name.regex.test(nickname)) ||
-        (options.messageSkip.enabled && options.messageSkip.regex.test(text))
+        (ttsSettings.name.enabled && ttsSettings.name.regex.test(nickname)) ||
+        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(text))
     ){
         return;
     }
 
-    if(options.message.enabled){
-        text = text.replace(options.message.regex, '');
+    if(ttsSettings.message.enabled){
+        text = text.replace(ttsSettings.message.regex, '');
     }
 
     ttsQueue.push(normalizeRepeatedText(text));
@@ -126,7 +131,7 @@ const playTTSByGoogle = async (text) => {
         const arrayBuffer = await res.arrayBuffer();
         const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
-        const maxTime = (+options.maximumPlayTime || 0);
+        const maxTime = (+ttsSettings.maximumPlayTime || 0);
         const duration = audioBuffer.duration;
 
         const gainNode = ctx.createGain();
