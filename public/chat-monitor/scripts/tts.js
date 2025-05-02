@@ -19,7 +19,7 @@ const ttsSettings = (() => {
         maximumPlayTime: 0, // 1회 채팅당 최대 재생 시간, 초단위
     };
 
-    const storageData = localStorage.getItem('ttsSettings') || '';
+    let storageData = localStorage.getItem('ttsSettings') || '';
     try{
         const {name, message, messageSkip, maximumPlayTime} = JSON.parse(storageData);
         typeof name?.enabled == 'boolean' && (defaultOptions.name.enabled = name.enabled);
@@ -33,6 +33,7 @@ const ttsSettings = (() => {
 
         maximumPlayTime != null && (defaultOptions.maximumPlayTime = +maximumPlayTime || defaultOptions.maximumPlayTime);
     }catch(e){
+        storageData = ''
         console.error(e);
     }
     if(!storageData){
