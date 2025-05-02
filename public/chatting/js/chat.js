@@ -1,6 +1,44 @@
 let client;
 let chatChannelId = '';
 
+const chatSettings = (() => {
+    const defaultOptions = {
+        name: { // 이름 필터링(특정 규칙의 이름은 보이지 않음)
+            enabled: false,
+            regex: /^.*(봇|bot)$/i,
+        },
+        message: { // 문자열 필터링(특정 규칙의 채팅은 보이지 않음)
+            enabled: true,
+            regex: /^[$].*$/u, // 각종 명령어들 TTS 제외처리
+        },
+    };
+
+    let storageData = localStorage.getItem('chatSettings') || '';
+    try{
+        const {name, message} = JSON.parse(storageData);
+        typeof name?.enabled == 'boolean' && (defaultOptions.name.enabled = name.enabled);
+        typeof name?.regex == 'string' && (defaultOptions.name.regex = name.regex);
+
+        typeof message?.enabled == 'boolean' && (defaultOptions.message.enabled = message.enabled);
+        typeof message?.regex == 'string' && (defaultOptions.message.regex = message.regex);
+    }catch(e){
+        storageData = ''
+        console.error(e)
+    }
+    if(!storageData){
+        localStorage.setItem('chatSettings', JSON.stringify(defaultOptions));
+    }
+    return defaultOptions;
+})();
+
+const saveOptions = () => {
+    try{
+        localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
+    }catch(e){
+        console.error(e);
+    }
+}
+
 const getRequestUrl = () => window.localStorage.getItem('wsURL') || location.host
 
 const escapeHTML = (text) => text.replace(/&/g, "&amp;")
@@ -10,6 +48,13 @@ const escapeHTML = (text) => text.replace(/&/g, "&amp;")
     .replace(/'/g, "&#039;");
 
 const addMessageBox = (profile, message, date = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
+    if(
+        (ttsSettings.name.enabled && ttsSettings.name.regex.test(profile?.nickname || '익명')) ||
+        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(message))
+    ){
+        return;
+    }
+
     const messageBoxDiv = document.createElement('div')
     messageBoxDiv.className = 'message-box'
     messageBoxDiv.id = date + ''
