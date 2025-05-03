@@ -49,8 +49,8 @@ const escapeHTML = (text) => text.replace(/&/g, "&amp;")
 
 const addMessageBox = (profile, message, date = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
     if(
-        (ttsSettings.name.enabled && ttsSettings.name.regex.test(profile?.nickname || '익명')) ||
-        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(message))
+        (chatSettings.name.enabled && chatSettings.name.regex.test(profile?.nickname || '익명')) ||
+        (chatSettings.message.enabled && chatSettings.message.regex.test(message))
     ){
         return;
     }
