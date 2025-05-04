@@ -1,5 +1,5 @@
 import mitt from "mitt";
-import {ChzzkChat, ChzzkClient, Followers, LiveStatus} from "chzzk";
+import {ChzzkChat, ChzzkClient, Followers} from "chzzk";
 import {delay} from "../utils";
 import {LiveInfo} from "../models/LiveInfo";
 
@@ -9,60 +9,43 @@ export type ChzzkEvents = {
 };
 
 export class ChzzkService{
-    static async setAuth(nidAuth: string, nidSession: string): Promise<ChzzkService>{
-        const client = new ChzzkClient({nidAuth, nidSession})
+    public readonly client: ChzzkClient
 
-        // TODO: error count check
-        let channelId = ''
-        while(!channelId){
-            try{
-                channelId = (await client.user()).userIdHash
-            }catch{
-                await delay(1000)
-            }
+    private _chat: ChzzkChat | undefined
+    private _liveInfo: LiveInfo = {
+        title: '',
+        channelId: '',
+        chatChannelId: '',
+        viewership: 0,
+        isLive: false,
+        category: {
+            id: '',
+            type: '',
+            name: '',
         }
-
-        let liveStatus: LiveStatus | undefined;
-        while(!liveStatus?.chatChannelId){
-            try{
-                liveStatus = await client.live.status(channelId)
-            }catch{
-                await delay(1000)
-            }
-        }
-
-        const chat = client.chat(liveStatus.chatChannelId)
-        chat.on('connect', () => chat.requestRecentChat(50));
-        await chat.connect()
-        return new ChzzkService(channelId, liveStatus, chat, client)
-    }
-
-    private _liveInfo: LiveInfo;
-    private poll: NodeJS.Timeout;
-    private readonly emitter = mitt<ChzzkEvents>();
+    };
+    private readonly emitter = mitt<ChzzkEvents>()
 
     // event listener
     readonly on = this.emitter.on;
 
-    private constructor(
-        channelId: string,
-        liveStatus: LiveStatus,
-        private _chat: ChzzkChat,
-        public readonly client: ChzzkClient,
-    ){
-        this._liveInfo = {
-            title: liveStatus.liveTitle,
-            channelId,
-            chatChannelId: liveStatus.chatChannelId,
-            viewership: liveStatus.concurrentUserCount,
-            isLive: liveStatus.status === 'OPEN',
-            category: {
-                id: liveStatus.liveCategory || null,
-                type: liveStatus.categoryType,
-                name: liveStatus.liveCategoryValue || null,
+    constructor(nidAuth: string, nidSession: string){
+        this.client = new ChzzkClient({nidAuth, nidSession})
+    }
+
+    async start(){
+        // TODO: error count check
+        let channelId = ''
+        while(!channelId){
+            try{
+                channelId = (await this.client.user()).userIdHash
+            }catch{
+                await delay(1000)
             }
         }
-        this.poll = setInterval(async () => this.refreshLiveStatus(), 10 * 1000);
+        this._liveInfo.channelId = channelId
+        await this.refreshLiveStatus()
+        setInterval(async () => this.refreshLiveStatus(), 10 * 1000);
     }
 
     private async refreshLiveStatus(){
@@ -73,14 +56,15 @@ export class ChzzkService{
 
         // 19세 등의 이유로 chatChannelId가 null이 될 가능성이 있음
         if(liveStatus.chatChannelId && liveStatus.chatChannelId !== this._liveInfo.chatChannelId){
-            if(this._chat.connected){
+            if(this._chat?.connected){
                 await this._chat.disconnect()
             }
-            this._chat = this.client.chat(liveStatus.chatChannelId)
-            this.emitter.emit('chat', this._chat)
+            const chatClient = this.client.chat(liveStatus.chatChannelId);
+            this._chat = chatClient
+            this.emitter.emit('chat', chatClient)
 
-            this._chat.on('connect', () => this._chat.requestRecentChat(50));
-            this._chat.connect().catch((e) => console.error(e))
+            chatClient.on('connect', () => chatClient.requestRecentChat(50))
+            chatClient.connect().catch((e) => console.error(e))
         }
 
         const newLiveInfo = {
@@ -102,7 +86,7 @@ export class ChzzkService{
     }
 
     get chat(): ChzzkChat{
-        return this._chat
+        return this._chat!
     }
 
     get liveInfo(): LiveInfo{

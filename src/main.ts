@@ -28,7 +28,7 @@ const createVoteTask = (service: ChzzkService) => {
         }catch{}
     }))
 
-    const chatListener = (chat: ChzzkChat) => {
+    service.on('chat', (chat) => {
         chat.on('chat', chat => {
             const jsonData = JSON.stringify({
                 user: chat.profile,
@@ -38,9 +38,7 @@ const createVoteTask = (service: ChzzkService) => {
                 client.send(jsonData)
             }
         })
-    }
-    chatListener(service.chat);
-    service.on('chat', chatListener);
+    });
 }
 
 const emojiSocket: WebSocket[] = []
@@ -52,8 +50,8 @@ const createEmojiTask = (service: ChzzkService) => {
         }
     }))
 
-    const chatListener = (chzzkChat: ChzzkChat) => {
-        chzzkChat.on('chat', chat => {
+    service.on('chat', (chat) => {
+        chat.on('chat', chat => {
             const emojiUrlList = chat.extras?.emojis
             if(!emojiUrlList || Object.keys(emojiUrlList).length < 1){
                 return
@@ -71,9 +69,7 @@ const createEmojiTask = (service: ChzzkService) => {
                 client.send(jsonData)
             }
         })
-    };
-    chatListener(service.chat)
-    service.on('chat', chatListener)
+    })
 }
 
 const chattingSocket: WebSocket[] = []
@@ -86,10 +82,10 @@ const createChattingTask = (service: ChzzkService) => {
         const message = data.toString('utf-8')
         if(message === 'CHATTING' && !chattingSocket.includes(client)){
             chattingSocket.push(client)
+            client.send(notice)
             for(const h of history){
                 client.send(h)
             }
-            client.send(notice)
             client.send(JSON.stringify({liveInfo: service.liveInfo}));
             client.onclose = () => chattingSocket.splice(chattingSocket.indexOf(client), 1)
             return
@@ -97,7 +93,7 @@ const createChattingTask = (service: ChzzkService) => {
     }))
 
     // chzzk client 정의
-    const chatListener = (chat: ChzzkChat) => { // 채팅 서버를 새로 연결하는 경우
+    service.on('chat', (chat: ChzzkChat) => { // 채팅 서버를 새로 연결하는 경우
         history = [];
         notice = JSON.stringify({notice: null})
         chat.on('notice', noticeData => {
@@ -151,7 +147,7 @@ const createChattingTask = (service: ChzzkService) => {
                 badgeList.push(viewerBadge.badge.imageUrl)
             }
 
-            if(history.length >= 50){
+            if(history.length >= 100){
                 history.shift();
             }
             const jsonStr = JSON.stringify({
@@ -172,9 +168,7 @@ const createChattingTask = (service: ChzzkService) => {
                 client.send(jsonStr)
             }
         })
-    };
-    chatListener(service.chat);
-    service.on('chat', chatListener);
+    });
     service.on('liveInfo', (liveInfo) => {
         const jsonStr = JSON.stringify({liveInfo});
         for(const client of chattingSocket){
@@ -258,12 +252,12 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
     const nidAuth = (await session.cookies.get({name: 'NID_AUT'}))[0]?.value || ''
     const nidSession = (await session.cookies.get({name: 'NID_SES'}))[0]?.value || ''
 
-    const service = await ChzzkService.setAuth(nidAuth, nidSession);
-
+    const service = new ChzzkService(nidAuth, nidSession);
     createVoteTask(service)
     createEmojiTask(service)
     createChattingTask(service)
     await createCheckFollowTask(service)
+    await service.start()
 
     // 웹 end-point 정의
     const expressApp = Web.instance.app
