@@ -6,9 +6,11 @@ const connect = () => {
     if(client?.readyState === WebSocket.OPEN){
         return;
     }
+    let connectTime = 0
     client = new WebSocket(`ws://${getRequestUrl()}/ws`)
     client.onopen = () => {
         clearChatBox();
+        connectTime = Date.now();
         client.send(`CHATTING`)
     }
     client.onmessage = e => {
@@ -17,7 +19,9 @@ const connect = () => {
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
-                addTTSQueue(message, profile)
+                if(connectTime < date){
+                    addTTSQueue(message, profile)
+                }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
             }
             if(typeof notice !== 'object') { // null or object
