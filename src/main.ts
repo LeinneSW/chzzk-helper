@@ -9,7 +9,7 @@ import windowStateKeeper from "electron-window-state";
 import {ChzzkChat} from "chzzk";
 
 const voteSocket: WebSocket[] = []
-const createVoteTask = () => {
+const createVoteTask = (service: ChzzkService) => {
     Web.instance.socket.on('connection', client => client.on('message', data => {
         const message = data.toString('utf-8')
         if(message === 'VOTE' && !voteSocket.includes(client)){
@@ -21,7 +21,7 @@ const createVoteTask = () => {
             const json = JSON.parse(message)
             switch(json.type){
                 case 'SEND_MESSAGE':
-                    json.message && ChzzkService.instance.chat.sendChat(json.message, json.emojis)
+                    json.message && service.chat.sendChat(json.message, json.emojis)
                     break;
             }
             return
@@ -39,12 +39,12 @@ const createVoteTask = () => {
             }
         })
     }
-    chatListener(ChzzkService.instance.chat);
-    ChzzkService.instance.on('chat', chatListener);
+    chatListener(service.chat);
+    service.on('chat', chatListener);
 }
 
 const emojiSocket: WebSocket[] = []
-const createEmojiTask = () => {
+const createEmojiTask = (service: ChzzkService) => {
     Web.instance.socket.on('connection', client => client.on('message', data => {
         if(data.toString('utf-8') === 'SHOW_EMOJI' && !emojiSocket.includes(client)){
             emojiSocket.push(client)
@@ -72,13 +72,13 @@ const createEmojiTask = () => {
             }
         })
     };
-    chatListener(ChzzkService.instance.chat)
-    ChzzkService.instance.on('chat', chatListener)
+    chatListener(service.chat)
+    service.on('chat', chatListener)
 }
 
 const chattingSocket: WebSocket[] = []
-const createChattingTask = () => {
-    let notice = JSON.stringify({notice: null});
+const createChattingTask = (service: ChzzkService) => {
+    let notice = '';
     let history: string[] = [];
 
     // chatting websocket 정의
@@ -90,15 +90,16 @@ const createChattingTask = () => {
                 client.send(h)
             }
             client.send(notice)
-            client.send(JSON.stringify({liveInfo: ChzzkService.instance.liveInfo}));
+            client.send(JSON.stringify({liveInfo: service.liveInfo}));
             client.onclose = () => chattingSocket.splice(chattingSocket.indexOf(client), 1)
             return
         }
     }))
 
     // chzzk client 정의
-    const chatListener = (chat: ChzzkChat) => {
-        history = []; // 새로 연결시 배열 초기화
+    const chatListener = (chat: ChzzkChat) => { // 채팅 서버를 새로 연결하는 경우
+        history = [];
+        notice = JSON.stringify({notice: null})
         chat.on('notice', noticeData => {
             let jsonStr;
             if(isObject(noticeData)){
@@ -126,7 +127,7 @@ const createChattingTask = () => {
                 colorData = convertColorCode(
                     streamingProperty.nicknameColor.colorCode,
                     chat.profile.userIdHash,
-                    ChzzkService.instance.liveInfo.chatChannelId
+                    service.liveInfo.chatChannelId
                 );
             }
 
@@ -172,9 +173,9 @@ const createChattingTask = () => {
             }
         })
     };
-    chatListener(ChzzkService.instance.chat);
-    ChzzkService.instance.on('chat', chatListener);
-    ChzzkService.instance.on('liveInfo', (liveInfo) => {
+    chatListener(service.chat);
+    service.on('chat', chatListener);
+    service.on('liveInfo', (liveInfo) => {
         const jsonStr = JSON.stringify({liveInfo});
         for(const client of chattingSocket){
             client.send(jsonStr)
@@ -186,7 +187,7 @@ let followCount: number = 0;
 let followList: string[] = [];
 const alertSocket: WebSocket[] = [];
 const followGoalSocket: WebSocket[] = [];
-const createCheckFollowTask = async () => {
+const createCheckFollowTask = async (service: ChzzkService) => {
     Web.instance.socket.on('connection', client => {
         client.on('message', data => {
             const message = data.toString('utf-8')
@@ -223,7 +224,7 @@ const createCheckFollowTask = async () => {
         }
     }catch{
         const list = [];
-        const followData = await ChzzkService.instance.getFollowerData(10000);
+        const followData = await service.getFollowerData(10000);
         followCount = followData.totalCount;
         for(const user of followData.data){
             list.push(user.user.userIdHash)
@@ -232,7 +233,7 @@ const createCheckFollowTask = async () => {
     }
     setInterval(async () => {
         let isAdded = false;
-        const followData = await ChzzkService.instance.getFollowerData(10);
+        const followData = await service.getFollowerData(10);
         followCount = followData.totalCount;
         for(const user of followData.data){
             if(!followList.includes(user.user.userIdHash)){
@@ -256,19 +257,18 @@ const createCheckFollowTask = async () => {
 const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => {
     const nidAuth = (await session.cookies.get({name: 'NID_AUT'}))[0]?.value || ''
     const nidSession = (await session.cookies.get({name: 'NID_SES'}))[0]?.value || ''
-    if(!await ChzzkService.setAuth(nidAuth, nidSession)){
-        return false
-    }
 
-    createVoteTask()
-    createEmojiTask()
-    createChattingTask()
-    await createCheckFollowTask()
+    const service = await ChzzkService.setAuth(nidAuth, nidSession);
+
+    createVoteTask(service)
+    createEmojiTask(service)
+    createChattingTask(service)
+    await createCheckFollowTask(service)
 
     // 웹 end-point 정의
     const expressApp = Web.instance.app
     expressApp.get('/user-info', async (_, res) => {
-        res.send(await ChzzkService.instance.client.user());
+        res.send(await service.client.user());
     })
     expressApp.all(/^\/fetch\/.*/, async (req, res) => {
         // TODO: proxy 기능 구현 예정
@@ -278,7 +278,7 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
     expressApp.post('/notice', async (req, res) => {
         try{
             const {channelId, messageTime, messageUserIdHash, streamingChannelId} = req.body;
-            const reqNotice = await ChzzkService.instance.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
+            const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -303,7 +303,7 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
     expressApp.delete('/notice', async (req, res) => {
         try{
             const {channelId} = req.body;
-            const reqNotice = await ChzzkService.instance.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
+            const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

@@ -9,45 +9,32 @@ export type ChzzkEvents = {
 };
 
 export class ChzzkService{
-    private static _instance: ChzzkService
+    static async setAuth(nidAuth: string, nidSession: string): Promise<ChzzkService>{
+        const client = new ChzzkClient({nidAuth, nidSession})
 
-    static get instance(): ChzzkService{
-        if(!this._instance){
-            throw new Error('Chzzk.setAuth()가 실행되기전엔 접근이 불가능합니다.')
-        }
-        return this._instance
-    }
-
-    static async setAuth(nidAuth: string, nidSession: string): Promise<boolean>{
-        if(nidAuth && nidSession){
-            const client = new ChzzkClient({nidAuth, nidSession})
-
-            // TODO: error count check
-            let channelId = ''
-            while(!channelId){
-                try{
-                    channelId = (await client.user()).userIdHash
-                }catch{
-                    await delay(1000)
-                }
+        // TODO: error count check
+        let channelId = ''
+        while(!channelId){
+            try{
+                channelId = (await client.user()).userIdHash
+            }catch{
+                await delay(1000)
             }
-
-            let liveStatus: LiveStatus | undefined;
-            while(!liveStatus){
-                try{
-                    liveStatus = await client.live.status(channelId)
-                }catch{
-                    await delay(1000)
-                }
-            }
-
-            const chat = client.chat(liveStatus.chatChannelId)
-            chat.on('connect', () => chat.requestRecentChat(50));
-            await chat.connect()
-            this._instance = new ChzzkService(channelId, liveStatus, chat, client)
-            return true
         }
-        return false
+
+        let liveStatus: LiveStatus | undefined;
+        while(!liveStatus?.chatChannelId){
+            try{
+                liveStatus = await client.live.status(channelId)
+            }catch{
+                await delay(1000)
+            }
+        }
+
+        const chat = client.chat(liveStatus.chatChannelId)
+        chat.on('connect', () => chat.requestRecentChat(50));
+        await chat.connect()
+        return new ChzzkService(channelId, liveStatus, chat, client)
     }
 
     private _liveInfo: LiveInfo;
