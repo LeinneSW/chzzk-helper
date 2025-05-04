@@ -99,7 +99,7 @@ export class ChzzkService{
         const newLiveInfo = {
             title: liveStatus.liveTitle,
             channelId: this._liveInfo.channelId,
-            chatChannelId: liveStatus.chatChannelId,
+            chatChannelId: liveStatus.chatChannelId || this._liveInfo.chatChannelId,
             viewership: liveStatus.concurrentUserCount,
             isLive: liveStatus.status === 'OPEN',
             category: {
