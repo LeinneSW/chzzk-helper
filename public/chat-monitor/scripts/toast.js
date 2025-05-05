@@ -3,7 +3,7 @@ function showToast(msg){
     let box = document.getElementById('toast-container');
     if(!box){
         box = document.createElement('div');
-        box.id='toast-container';
+        box.id = 'toast-container';
         document.body.appendChild(box);
     }
 
