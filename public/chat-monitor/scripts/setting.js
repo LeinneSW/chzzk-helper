@@ -56,4 +56,24 @@ window.addEventListener('load', () => {
         option.addEventListener('mouseenter', () => showTooltip(option))
         option.addEventListener('mouseleave', () => hideTooltip(option))
     }
+
+    // TTS toggle button
+    const updateButton = () => {
+        if(localStorage.getItem('enableTTS') === '0'){ // TTS 비활성화
+            document.querySelector('.bi.bi-megaphone').style.display = ''
+            document.querySelector('.bi.bi-megaphone-fill').style.display = 'none'
+        }else{ // TTS 활성화
+            document.querySelector('.bi.bi-megaphone').style.display = 'none'
+            document.querySelector('.bi.bi-megaphone-fill').style.display = ''
+        }
+    }
+
+    updateButton()
+    const ttsButton = document.getElementById('tts-button');
+    ttsButton.onclick = () => {
+        const enabled = localStorage.getItem('enableTTS') || '1'
+        localStorage.setItem('enableTTS', (+enabled + 1) % 2 + '')
+        showToast(enabled === '1' ? 'TTS 기능이 비활성화 되었습니다.' : 'TTS 기능이 활성화 되었습니다')
+        updateButton()
+    }
 })
