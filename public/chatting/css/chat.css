@@ -40,14 +40,15 @@ body, html{
 }
 
 .message-box{
-    margin: 6px;
-    padding: 6px;
+    padding: 7px;
     border-radius: 5px;
     background-color: rgba(0, 0, 0, 0.45);
 
     opacity: 0;
     transition: all .5s ease-in-out;
-    line-height: calc(var(--font-size) + 9px); /* 이모지 크기를 맞추기 위해 사용 */
+}
+.message-box + .message-box{
+    margin-top: 4px;
 }
 
 .message-box *{
