@@ -118,7 +118,7 @@ const addMessageBox = (profile, message, date = Date.now(), colorData = 'white',
     for(const emojiName in emojiList){
         message = message.replaceAll(`{:${emojiName}:}`, `<img class='emoji' src='${emojiList[emojiName]}' alt="emoji">`)
     }
-    messageSpan.innerHTML = ` : ${message}`
+    messageSpan.innerHTML = message
     messageBoxDiv.appendChild(messageSpan)
 }
 
