@@ -21,7 +21,7 @@ const connect = () => {
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
                 if(connectTime < date){
-                    addTTSQueue(message, profile)
+                    addTTSQueue(profile, message)
                 }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
             }
@@ -35,7 +35,11 @@ const connect = () => {
 
 window.addEventListener('load', async () => {
     document.onclick = () => {
-        addTTSQueue('TTS 활성화');
+        if(localStorage.getItem('enableTTS') === '0'){
+            return;
+        }
+
+        playTTS('TTS 활성화');
         document.onclick = () => {};
     }
 

@@ -67,16 +67,14 @@ const normalizeRepeatedText = (text) => {
     return text;
 }
 
-const addTTSQueue = (text, profile) => {
+const addTTSQueue = (profile, text) => {
     if(localStorage.getItem('enableTTS') === '0'){
         return;
     }
 
-    // 특정 닉네임, 문자열 제외 기능
-    const nickname = profile?.nickname || '익명'
     if(
-        (ttsSettings.name.enabled && ttsSettings.name.regex.test(nickname)) ||
-        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(text))
+        (ttsSettings.name.enabled && ttsSettings.name.regex.test(profile.nickname)) || // 닉네임 필터링
+        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(text)) // 문자열 필터링
     ){
         return;
     }
