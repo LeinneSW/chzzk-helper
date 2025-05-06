@@ -77,6 +77,40 @@ const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white'
     }
 }
 
+const updateNotice = (notice) => {
+    if(typeof notice !== 'object') { // null or object
+        return;
+    }
+
+    const noticeContainer = document.getElementById('notice-container');
+    if(!notice){
+        noticeContainer.classList.add('hide');
+    }else{
+        noticeContainer.classList.remove('hide');
+        noticeContainer.innerHTML = `<div>${notice.registerProfile.nickname}님이 고정</div><div>${notice.message}</div>`;
+        noticeContainer.onclick = () => {
+            fetch('/notice', {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    channelId: currentLiveInfo.chatChannelId,
+                })
+            })
+                .then(async (res) => {
+                    const data = await res.json();
+                    if(res.ok && data.code === 200){
+                        noticeContainer.onclick = () => {};
+                    }else{
+                        showToast('공지 제거 실패! 권한이 없습니다.')
+                    }
+                })
+                .catch(() => showToast('공지 제거 실패! 권한이 없습니다.'))
+        }
+    }
+}
+
 const updateLiveInfo = (newLiveInfo) => {
     if(!newLiveInfo || typeof newLiveInfo !== 'object'){
         return;
