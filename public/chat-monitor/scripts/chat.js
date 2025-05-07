@@ -34,15 +34,6 @@ const connect = () => {
 }
 
 window.addEventListener('load', async () => {
-    document.onclick = () => {
-        if(localStorage.getItem('enableTTS') === '0'){
-            return;
-        }
-
-        playTTS('TTS 활성화');
-        document.onclick = () => {};
-    }
-
     // 채널명, 프사 취득하기
     const user = await (await fetch('/user-info')).json();
     const nickname = document.getElementById('streamer-name');
