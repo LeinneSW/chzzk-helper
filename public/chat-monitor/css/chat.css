@@ -67,10 +67,6 @@ body, html{
     padding-top: var(--font-spacing);
 }
 
-.message-box:last-child{
-    margin-bottom: 4px;
-}
-
 .message-box *{
     vertical-align: middle;
 }
@@ -130,4 +126,36 @@ body, html{
 html{
     scrollbar-width: thin;
     scrollbar-color: rgba(200, 200, 200, 0.4) transparent; /* thumb / track */
+}
+
+#input-container{
+    display: flex;
+}
+
+
+#input-container *{
+    border: none;
+    border-radius: 8px;
+
+    margin: 3px;
+    padding: 4px 8px;
+
+    color: black;
+    background-color: #e0e0e0;
+
+    font-size: var(--font-size);
+}
+
+#input-container input{
+    flex: 1;
+}
+
+#input-container input:focus{
+    outline: none;
+}
+
+#input-container .button{
+    border-radius: 8px;
+    margin: 3px;
+    padding: 7px;
 }
