@@ -31,7 +31,7 @@ const hideTooltip = (option) => {
 }
 
 window.addEventListener('load', () => {
-    const sliders = document.querySelectorAll('.slider-container > .slider')
+    const sliders = document.querySelectorAll('.settings .slider-container > .slider')
     for(const slider of sliders){
         const saveName = slider.dataset.saveName
         slider.value = (saveName && localStorage.getItem(saveName)) || slider.value
@@ -42,16 +42,46 @@ window.addEventListener('load', () => {
             saveName && localStorage.setItem(saveName, slider.value + '')
         })
     }
-    const radioList = document.querySelectorAll('input[type=radio]')
-    for(const radio of radioList){
-        const saveName = radio.dataset.saveName
-        radio.checked = (saveName && radio.value === localStorage.getItem(saveName)) || radio.checked
-        radio.addEventListener('input', () => {
-            const saveName = radio.dataset.saveName
-            saveName && localStorage.setItem(saveName, radio.value + '')
-        })
+
+    const inputList = document.querySelectorAll('.settings .option-input')
+    for(const input of inputList){
+        const key = input.dataset.saveName
+        if(!key) continue
+
+        // 저장된 값 불러오기
+        const storedValue = localStorage.getItem(key);
+        if(storedValue !== null){
+            switch(input.type){
+                case 'checkbox':
+                    input.checked = storedValue === 'true'
+                    break;
+                case 'radio':
+                    if(input.value === storedValue) input.checked = true
+                    break;
+                default:
+                    input.value = storedValue
+                    break;
+            }
+        }
+
+        // 이벤트 핸들러 등록 (type별 분기)
+        let handler = null;
+        switch(input.type){
+            case 'checkbox':
+                handler = () => localStorage.setItem(key, input.checked.toString())
+                break;
+            case 'radio':
+                handler = () => input.checked && localStorage.setItem(key, input.value)
+                break;
+            default:
+                handler = () =>  localStorage.setItem(key, input.value)
+                break;
+        }
+        input.addEventListener('input', handler)
     }
-    const optionList = document.querySelectorAll(`.option-title`)
+
+    // 툴팁
+    const optionList = document.querySelectorAll(`.settings .option-title`)
     for(const option of optionList){
         option.addEventListener('mouseenter', () => showTooltip(option))
         option.addEventListener('mouseleave', () => hideTooltip(option))
