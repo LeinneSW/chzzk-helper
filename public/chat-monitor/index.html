@@ -31,12 +31,13 @@
             </div>
             <div style="margin-bottom: 20px; font-size: 0;"></div>
             <div class="settings-title">TTS 설정</div>
-            <div class="option-title" data-description="닉네임 끝이 'bot, 봇'인 유저를 무시합니다">봇 필터링</div>
+            <div class="option-title" data-description="TTS를 읽지 않게 할 닉네임을 설정합니다">닉네임 필터링</div>
             <div style="font-size: 0 !important">
-                <input class="option-input" type="radio" name="enableBot" value="1" id="enableBot" data-save-name="ignoreBot" checked>
-                <label class="option-label" for="enableBot">활성화</label>
-                <input class="option-input" type="radio" name="enableBot" value="0" id="disableBot" data-save-name="ignoreBot">
-                <label class="option-label" for="disableBot">비활성화</label>
+                <select class="option-input" id="tts-name-filter" data-save-name="ttsNameFilter">
+                    <option value="bot">봇</option>
+                    <option value="custom">커스텀</option>
+                    <option value="none">없음</option>
+                </select>
             </div>
             <div class="option-title">음성 볼륨</div>
             <div class="slider-container">
