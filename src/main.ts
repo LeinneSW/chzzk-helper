@@ -361,21 +361,17 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
     window.on('close', event => {
         const response = dialog.showMessageBoxSync(window, {
             type: 'question',
-            buttons: ['아니오', '트레이로 이동', '프로그램 종료'],
-            title: `치지직 도우미 종료`,
-            message: '치치직 도우미를 종료하시겠습니까?\n(OBS에 추가한 브라우저 위젯들은 도우미가 켜져있어야 동작합니다.)'
+            buttons: ['예(프로그램 종료)', '아니오(트레이로 이동)'],
+            title: `프로그램 종료`,
+            message: '정말로 치치직 도우미를 종료하시겠습니까?\n치지직 도우미가 종료되면 OBS에 추가한 위젯들은 동작하지 않습니다!'
         })
         switch(response){
             case 1:
                 window.hide()
-                break;
-            case 0:
-                window.hide()
                 event.preventDefault()
                 break
             default:
-                window.destroy()
-                break
+                return window.destroy()
         }
     })
     await window.loadURL('http://127.0.0.1:54321/')
