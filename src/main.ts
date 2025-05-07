@@ -16,16 +16,6 @@ const createVoteTask = (service: ChzzkService) => {
             voteSocket.push(client)
             client.onclose = () => voteSocket.splice(voteSocket.indexOf(client), 1)
         }
-
-        try{
-            const json = JSON.parse(message)
-            switch(json.type){
-                case 'SEND_MESSAGE':
-                    json.message && service.chat.sendChat(json.message, json.emojis)
-                    break;
-            }
-            return
-        }catch{}
     }))
 
     service.on('chat', (chat) => {
@@ -90,6 +80,16 @@ const createChattingTask = (service: ChzzkService) => {
             client.onclose = () => chattingSocket.splice(chattingSocket.indexOf(client), 1)
             return
         }
+
+        try{
+            const json = JSON.parse(message)
+            switch(json.type){
+                case 'SEND_MESSAGE':
+                    json.message && service.chat.sendChat(json.message, json.emojis)
+                    break;
+            }
+            return
+        }catch{}
     }))
 
     // chzzk client 정의
