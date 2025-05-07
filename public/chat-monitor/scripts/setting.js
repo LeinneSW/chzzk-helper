@@ -51,7 +51,7 @@ window.addEventListener('load', () => {
             saveName && localStorage.setItem(saveName, radio.value + '')
         })
     }
-    const optionList = document.querySelectorAll(`#settings > .option-title`)
+    const optionList = document.querySelectorAll(`.option-title`)
     for(const option of optionList){
         option.addEventListener('mouseenter', () => showTooltip(option))
         option.addEventListener('mouseleave', () => hideTooltip(option))
