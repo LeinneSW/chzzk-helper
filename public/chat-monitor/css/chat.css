@@ -137,17 +137,18 @@ html{
     border: none;
     border-radius: 8px;
 
-    margin: 3px;
-    padding: 4px 8px;
+    margin: 4px;
+    padding: 5px 9px;
 
     color: black;
-    background-color: #e0e0e0;
+    background-color: #f3f3f3;
 
     font-size: var(--font-size);
 }
 
 #input-container input{
     flex: 1;
+    margin-right: 0;
 }
 
 #input-container input:focus{
@@ -156,6 +157,4 @@ html{
 
 #input-container .button{
     border-radius: 8px;
-    margin: 3px;
-    padding: 7px;
 }
