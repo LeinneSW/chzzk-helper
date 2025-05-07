@@ -152,13 +152,23 @@ const changeCountVisibility = (event) => {
     updateVoteCount()
 }
 
-const sendChat = async () => {
+const sendChat = async (event) => {
     if(client?.readyState !== WebSocket.OPEN){
-        showAlertModal('연결 실패', '치지직 도우미가 종료된것 같습니다. 치지직 도우미를 켠 후 다시 시도해주세요.')
+        showAlertModal('연결 실패', '서버와의 연결이 끊긴것 같습니다. 잠시 후 다시 시도해주세요.')
         return
     }
 
-    const input = document.getElementById(`chatting-input`)
+    let input = event instanceof KeyboardEvent ? event.target : null
+    if(input && event.key !== 'Enter'){
+        return;
+    }else if(!input){
+        input = document.getElementById(`message-input`)
+    }
+
+    if(!input.value){
+        return;
+    }
+
     client.send(JSON.stringify({
         type: `SEND_MESSAGE`,
         message: input.value

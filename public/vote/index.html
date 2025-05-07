@@ -39,7 +39,7 @@
                 </div>
                 <ol id="vote-item-list">
                     <li onclick="this.children[0].focus()">
-                        <input type="text" placeholder="새 항목 추가" onfocusout="focusEvent(event)" onkeypress="event.keyCode === 13 && addVoteItem(this)" spellcheck="false">
+                        <input type="text" placeholder="새 항목 추가" onfocusout="focusEvent(event)" onkeydown="event.key === 'Enter' && addVoteItem(this)" spellcheck="false">
                         <span></span>
                     </li>
                 </ol>
@@ -48,8 +48,8 @@
                 <div class="title text-center p-3 border-bottom">방송 채팅</div>
                 <div id="chatting-context-container"></div>
                 <div id="chatting-input-container">
-                    <input id="chatting-input" class="flex-1 form-control" type="text" placeholder="채팅을 입력해주세요" onkeypress="event.keyCode === 13 && sendChat(this)" spellcheck="false">
-                    <button class="btn btn-dark btn-sm" onclick="sendChat()">전송</button>
+                    <input id="chatting-input" class="flex-1 form-control" type="text" placeholder="채팅을 입력해주세요" spellcheck="false">
+                    <button id="send-button" class="btn btn-dark btn-sm" onclick="sendChat()">전송</button>
                 </div>
             </div>
         </div>

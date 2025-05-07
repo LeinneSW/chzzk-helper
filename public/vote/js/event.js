@@ -33,3 +33,10 @@ const focusEvent = (event) => {
     }
     addVoteItem(event.target)
 }
+
+window.addEventListener('load', () => {
+    const chattingInput = document.getElementById('chatting-input')
+    chattingInput.addEventListener('keydown', sendChat)
+    const sendBtn = document.getElementById('send-button')
+    sendBtn.addEventListener('click', sendChat)
+})
