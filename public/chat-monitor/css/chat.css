@@ -56,7 +56,6 @@ body, html{
     background-color: #414141;
     cursor: pointer;
     border-radius: 6px;
-    transition: .35s;
 }
 
 .message-box:first-child{
