@@ -1,6 +1,6 @@
 {
   "name": "chzzk-helper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "치지직 도우미",
   "main": "build/main.js",
   "scripts": {
