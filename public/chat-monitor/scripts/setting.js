@@ -1,7 +1,7 @@
 const setInputValue = (input, suffix = '') => {
     input.nextElementSibling.textContent = input.value + suffix
     const customCss = input.dataset.customCss
-    customCss && document.documentElement.style.setProperty(customCss, input.value + 'px')
+    customCss && document.documentElement.style.setProperty(customCss, input.value + suffix)
 }
 
 const showTooltip = (tipElement) => {
