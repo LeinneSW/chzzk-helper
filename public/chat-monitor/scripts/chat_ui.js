@@ -13,6 +13,22 @@ const formatTime = (msecs) => {
     return `[${h}:${m}]`
 }
 
+const MAX_MESSAGES = 1000;
+const HEIGHT_THRESHOLD = 8; // 스크롤 여유 픽셀
+
+const updateScrollButton = (isAtBottom) => {
+    const button  = document.getElementById('scroll-button');
+    if(typeof isAtBottom !== 'boolean'){
+        const chat = document.getElementById('chat-container');
+        isAtBottom = chat.scrollTop + chat.clientHeight >= chat.scrollHeight - HEIGHT_THRESHOLD;
+    }
+    if(isAtBottom){
+        button.classList.add('hide');
+    }else{
+        button.classList.remove('hide');
+    }
+}
+
 const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
     const chatBox = document.getElementById('chat-container');
     const messageBoxDiv = document.createElement('div')
@@ -71,10 +87,15 @@ const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white'
     messageSpan.innerHTML = ` : ${message}`
     messageBoxDiv.appendChild(messageSpan)
 
-    const threshold = 10; // 오차 허용값 (px)
-    if(chatBox.scrollHeight - (chatBox.scrollTop + chatBox.clientHeight + messageBoxDiv.clientHeight) <= threshold){
+    while(chatBox.childElementCount > MAX_MESSAGES){
+        chatBox.firstElementChild.remove();
+    }
+
+    const isAtBottom = chatBox.scrollHeight - (chatBox.scrollTop + chatBox.clientHeight + messageBoxDiv.clientHeight) <= HEIGHT_THRESHOLD;
+    if(isAtBottom){
         chatBox.scrollTop = chatBox.scrollHeight;
     }
+    updateScrollButton(isAtBottom);
 }
 
 const updateNotice = (notice) => {
@@ -148,3 +169,13 @@ const clearChatBox = () => {
         chatBox.removeChild(chatBox.firstChild);
     }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+    const chat = document.getElementById('chat-container');
+    chat.addEventListener('scroll', updateScrollButton);
+
+    const button  = document.getElementById('scroll-button');
+    button.addEventListener('click', () => {
+        chat.scrollTo({top: chat.scrollHeight, behavior: 'smooth'});
+    });
+});

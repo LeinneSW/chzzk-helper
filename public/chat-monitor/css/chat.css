@@ -131,7 +131,6 @@ html{
     display: flex;
 }
 
-
 #input-container *{
     border: none;
     border-radius: 8px;
@@ -145,6 +144,29 @@ html{
     font-size: var(--font-size);
 }
 
+
+/* 하단 스크롤 이동 버튼 */
+#scroll-button{
+    position: fixed;
+    right: 20px;
+    bottom: calc(var(--font-size) + 30px);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgb(51,51,51);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: opacity .2s;
+}
+#scroll-button:hover{
+    opacity: 1;
+}
+
+/* 메시지 입력 칸 */
 #input-container input{
     flex: 1;
     margin-right: 0;
