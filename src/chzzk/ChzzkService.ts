@@ -63,7 +63,7 @@ export class ChzzkService{
             this._chat = chatClient
             this.emitter.emit('chat', chatClient)
 
-            chatClient.on('connect', () => chatClient.requestRecentChat(50))
+            chatClient.on('connect', () => chatClient.requestRecentChat(100))
             chatClient.connect().catch((e) => console.error(e))
         }
 
