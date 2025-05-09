@@ -38,13 +38,14 @@
 }
 
 .tooltip{
+    top: 0;
+    left: 0;
     color: #fff;
-    padding: 5px;
-    margin-left: -3px;
+    padding: .45em;
     z-index: 9999;
     font-size: 15px;
     position: absolute;
-    border-radius: 7px;
+    border-radius: 8px;
     background-color: #616161;
 }
 

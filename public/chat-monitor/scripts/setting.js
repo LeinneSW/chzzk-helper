@@ -4,13 +4,8 @@ const setInputValue = (input, suffix = '') => {
     customCss && document.documentElement.style.setProperty(customCss, input.value + 'px')
 }
 
-const showTooltip = (option) => {
-    if(option.nextElementSibling.classList.contains('tooltip')){
-        // 모종의 이유로 툴팁이 삭제되지 않은경우
-        return
-    }
-
-    const description = option.dataset.description
+const showTooltip = (tipElement) => {
+    const description = tipElement.dataset.description
     if(!description){
         return
     }
@@ -19,15 +14,24 @@ const showTooltip = (option) => {
     const tooltip = document.createElement('div')
     tooltip.className = 'tooltip'
     tooltip.innerHTML = description.replaceAll('\\n', '<br>')
-    option.parentNode.insertBefore(tooltip, option.nextElementSibling)
-    tooltip.style.top = (option.getBoundingClientRect().top - tooltip.offsetHeight) + 'px'
+    tipElement.appendChild(tooltip)
+
+    // 위치 계산
+    const ttRect  = tooltip.getBoundingClientRect()
+    const tipRect = tipElement.getBoundingClientRect()
+
+    const top  = tipRect.top - ttRect.height // 기본 좌표: 항목 위에 뜨도록
+    tooltip.style.top = `${(top > 0 ? top : tipRect.bottom)  + window.scrollY}px`
+
+    let left = tipRect.left // 기본 좌표: 좌측 정렬
+    if(left + ttRect.width > window.innerWidth){ // 오른쪽 넘침
+        left = window.innerWidth - ttRect.width
+    }
+    tooltip.style.left = `${left + window.scrollX - 3}px`
 }
 
-const hideTooltip = (option) => {
-    const tooltip = option.nextElementSibling
-    if(tooltip.classList.contains('tooltip')){
-        tooltip.remove()
-    }
+const hideTooltip = (tipElement) => {
+    tipElement.querySelectorAll('.tooltip').forEach(tooltip => tooltip.remove())
 }
 
 window.addEventListener('load', () => {
@@ -81,9 +85,9 @@ window.addEventListener('load', () => {
     }
 
     // 툴팁
-    const optionList = document.querySelectorAll(`.settings .option-title`)
-    for(const option of optionList){
-        option.addEventListener('mouseenter', () => showTooltip(option))
-        option.addEventListener('mouseleave', () => hideTooltip(option))
+    const tipElements = document.querySelectorAll(`[data-description]`)
+    for(const tipElement of tipElements){
+        tipElement.addEventListener('mouseenter', () => showTooltip(tipElement))
+        tipElement.addEventListener('mouseleave', () => hideTooltip(tipElement))
     }
 })
