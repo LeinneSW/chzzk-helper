@@ -10,7 +10,6 @@ const showTooltip = (tipElement) => {
         return
     }
 
-
     const tooltip = document.createElement('div')
     tooltip.className = 'tooltip'
     tooltip.innerHTML = description.replaceAll('\\n', '<br>')
@@ -69,7 +68,7 @@ window.addEventListener('load', () => {
         }
 
         // 이벤트 핸들러 등록 (type별 분기)
-        let handler = null;
+        let handler
         switch(input.type){
             case 'checkbox':
                 handler = () => localStorage.setItem(key, input.checked.toString())
@@ -82,6 +81,12 @@ window.addEventListener('load', () => {
                 break;
         }
         input.addEventListener('input', handler)
+        input.addEventListener('input', () => {
+            const customCss = input.dataset.customCss
+            if(customCss){
+                document.documentElement.style.setProperty(customCss, input.value)
+            }
+        })
     })
 
     // 툴팁
