@@ -19,6 +19,13 @@
     <div class="modal-overlay" id="settings-modal">
         <div class="settings">
             <div class="settings-title">메시지 설정</div>
+            <div class="option-title" data-description="메시지가 입력된 시각 출력 여부를 설정합니다">타임스탬프</div>
+            <div style="font-size: 0 !important">
+                <input class="option-input" type="radio" name="enableTime" value="inline" id="enableTime" data-save-name="enableTime" data-custom-css="--display-time" checked>
+                <label class="option-label" for="enableTime">활성화</label>
+                <input class="option-input" type="radio" name="enableTime" value="none" id="disableTime" data-save-name="enableTime" data-custom-css="--display-time">
+                <label class="option-label" for="disableTime">비활성화</label>
+            </div>
             <div class="option-title" data-description="채팅 내용의 글자 크기를 조절합니다">글자 크기</div>
             <div class="slider-container">
                 <input class="slider" type="range" min="10" max="50" value="18" data-suffix="px" data-save-name="chatFontSize" data-custom-css="--font-size">

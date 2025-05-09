@@ -1,6 +1,7 @@
 :root{
     --font-size: 30px;
     --font-spacing: 0;
+    --display-time: inline;
 }
 
 @font-face{
@@ -71,6 +72,7 @@ body, html{
 }
 
 .time{
+    display: var(--display-time);
     color: #c1c1c1;
     padding-right: 5px;
     font-feature-settings: "tnum";
