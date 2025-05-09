@@ -35,8 +35,7 @@ const hideTooltip = (tipElement) => {
 }
 
 window.addEventListener('load', () => {
-    const sliders = document.querySelectorAll('.settings .slider-container > .slider')
-    for(const slider of sliders){
+    document.querySelectorAll('.settings .slider-container > .slider').forEach(slider => {
         const saveName = slider.dataset.saveName
         slider.value = (saveName && localStorage.getItem(saveName)) || slider.value
         setInputValue(slider, slider.dataset.suffix)
@@ -45,12 +44,13 @@ window.addEventListener('load', () => {
             const saveName = slider.dataset.saveName
             saveName && localStorage.setItem(saveName, slider.value + '')
         })
-    }
+    })
 
-    const inputList = document.querySelectorAll('.settings .option-input')
-    for(const input of inputList){
+    document.querySelectorAll('.settings .option-input').forEach(input => {
         const key = input.dataset.saveName
-        if(!key) continue
+        if(!key){
+            return
+        }
 
         // 저장된 값 불러오기
         const storedValue = localStorage.getItem(key);
@@ -82,7 +82,7 @@ window.addEventListener('load', () => {
                 break;
         }
         input.addEventListener('input', handler)
-    }
+    })
 
     // 툴팁
     const tipElements = document.querySelectorAll(`[data-description]`)
