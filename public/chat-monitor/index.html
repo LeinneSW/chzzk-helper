@@ -28,13 +28,13 @@
             </div>
             <div class="option-title" data-description="채팅 내용의 글자 크기를 조절합니다">글자 크기</div>
             <div class="slider-container">
-                <input class="slider" type="range" min="10" max="50" value="18" data-suffix="px" data-save-name="chatFontSize" data-custom-css="--font-size">
-                <div class="slider-value"></div>
+                <input id="chat-font-size" class="slider" type="range" min="10" max="50" value="18" data-suffix="px" data-save-name="chatFontSize" data-custom-css="--font-size">
+                <label for="chat-font-size" class="slider-value"></label>
             </div>
             <div class="option-title" data-description="글자 세로 간격을 조절합니다">글자 간격</div>
             <div class="slider-container">
-                <input class="slider" type="range" min="0" max="30" value="0" data-suffix="px" data-save-name="chatFontSpacing" data-custom-css="--font-spacing">
-                <div class="slider-value"></div>
+                <input id="chat-font-spacing" class="slider" type="range" min="0" max="30" value="0" data-suffix="px" data-save-name="chatFontSpacing" data-custom-css="--font-spacing">
+                <label for="chat-font-spacing" class="slider-value"></label>
             </div>
             <div style="margin-bottom: 20px; font-size: 0;"></div>
             <div class="settings-title">TTS 설정</div>
@@ -48,8 +48,8 @@
             </div>-->
             <div class="option-title" data-description="재생될 음성의 크기를 조절합니다">음성 크기</div>
             <div class="slider-container">
-                <input class="slider" id="sizeSlider" type="range" min="1" max="100" value="100" data-suffix="%" data-save-name="ttsVolume">
-                <div class="slider-value"></div>
+                <input class="slider" id="tts-volume" type="range" min="1" max="100" value="100" data-suffix="%" data-save-name="ttsVolume">
+                <label for="tts-volume" class="slider-value"></label>
             </div>
         </div>
     </div>

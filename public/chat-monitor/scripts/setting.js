@@ -1,9 +1,3 @@
-const setInputValue = (input, suffix = '') => {
-    input.nextElementSibling.textContent = input.value + suffix
-    const customCss = input.dataset.customCss
-    customCss && document.documentElement.style.setProperty(customCss, input.value + suffix)
-}
-
 const showTooltip = (tipElement) => {
     const description = tipElement.dataset.description
     if(!description){
@@ -33,13 +27,36 @@ const hideTooltip = (tipElement) => {
     tipElement.querySelectorAll('.tooltip').forEach(tooltip => tooltip.remove())
 }
 
+const updateCssStyle = (element) => {
+    const suffix = element.dataset.suffix || ''
+    if(element.type === 'range'){
+        const labelElement = element.labels?.[0];     // NodeList → 첫 번째만 사용
+        if(labelElement){
+            labelElement.textContent = element.value + suffix
+        }
+    }
+    const customCss = element.dataset.customCss
+    if(!customCss){
+        return
+    }
+
+    if(element.type !== 'radio' || element.checked){
+        let value = element.value + suffix
+        if(element.type === 'checkbox' && !element.checked){
+            value = ''
+        }
+        document.documentElement.style.setProperty(customCss, value)
+    }
+}
+
 window.addEventListener('load', () => {
     document.querySelectorAll('.settings .slider-container > .slider').forEach(slider => {
         const saveName = slider.dataset.saveName
         slider.value = (saveName && localStorage.getItem(saveName)) || slider.value
-        setInputValue(slider, slider.dataset.suffix)
+        updateCssStyle(slider)
+
         slider.addEventListener('input', () => {
-            setInputValue(slider, slider.dataset.suffix)
+            updateCssStyle(slider)
             const saveName = slider.dataset.saveName
             saveName && localStorage.setItem(saveName, slider.value + '')
         })
@@ -66,6 +83,7 @@ window.addEventListener('load', () => {
                     break;
             }
         }
+        updateCssStyle(input)
 
         // 이벤트 핸들러 등록 (type별 분기)
         let handler
@@ -80,12 +98,9 @@ window.addEventListener('load', () => {
                 handler = () =>  localStorage.setItem(key, input.value)
                 break;
         }
-        input.addEventListener('input', handler)
         input.addEventListener('input', () => {
-            const customCss = input.dataset.customCss
-            if(customCss){
-                document.documentElement.style.setProperty(customCss, input.value)
-            }
+            handler()
+            updateCssStyle(input)
         })
     })
 
