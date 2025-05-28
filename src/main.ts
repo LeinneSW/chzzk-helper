@@ -3,14 +3,13 @@ import {WebSocket} from 'ws'
 import path from 'path'
 import {ChzzkService} from "./chzzk/ChzzkService";
 import {convertColorCode, initNicknameColorData, isObject, readResource, saveResource} from "./utils";
-import {Web} from "./web/Web";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
 import {ChzzkChat} from "chzzk";
 
 const voteSocket: WebSocket[] = []
 const createVoteTask = (service: ChzzkService) => {
-    Web.instance.socket.on('connection', client => client.on('message', data => {
+    service.socket.on('connection', client => client.on('message', data => {
         const message = data.toString('utf-8')
         if(message === 'VOTE' && !voteSocket.includes(client)){
             voteSocket.push(client)
@@ -33,7 +32,7 @@ const createVoteTask = (service: ChzzkService) => {
 
 const emojiSocket: WebSocket[] = []
 const createEmojiTask = (service: ChzzkService) => {
-    Web.instance.socket.on('connection', client => client.on('message', data => {
+    service.socket.on('connection', client => client.on('message', data => {
         if(data.toString('utf-8') === 'SHOW_EMOJI' && !emojiSocket.includes(client)){
             emojiSocket.push(client)
             client.on('close', () => emojiSocket.splice(emojiSocket.indexOf(client), 1))
@@ -68,7 +67,7 @@ const createChattingTask = (service: ChzzkService) => {
     let history: string[] = [];
 
     // chatting websocket 정의
-    Web.instance.socket.on('connection', client => client.on('message', data => {
+    service.socket.on('connection', client => client.on('message', data => {
         const message = data.toString('utf-8')
         if(message === 'CHATTING' && !chattingSocket.includes(client)){
             chattingSocket.push(client)
@@ -182,7 +181,7 @@ let followList: string[] = [];
 const alertSocket: WebSocket[] = [];
 const followGoalSocket: WebSocket[] = [];
 const createCheckFollowTask = async (service: ChzzkService) => {
-    Web.instance.socket.on('connection', client => {
+    service.socket.on('connection', client => {
         client.on('message', data => {
             const message = data.toString('utf-8')
             switch(message){
@@ -260,16 +259,15 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
     await service.start()
 
     // 웹 end-point 정의
-    const expressApp = Web.instance.app
-    expressApp.get('/user-info', async (_, res) => {
+    service.app.get('/user-info', async (_, res) => {
         res.send(await service.client.user());
     })
-    expressApp.all(/^\/fetch\/.*/, async (req, res) => {
+    service.app.all(/^\/fetch\/.*/, async (req, res) => {
         // TODO: proxy 기능 구현 예정
         console.log('req.url: ', req.path)
         res.send({});
     })
-    expressApp.post('/notice', async (req, res) => {
+    service.app.post('/notice', async (req, res) => {
         try{
             const {channelId, messageTime, messageUserIdHash, streamingChannelId} = req.body;
             const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
@@ -294,7 +292,7 @@ const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => 
         }
         res.sendStatus(500);
     })
-    expressApp.delete('/notice', async (req, res) => {
+    service.app.delete('/notice', async (req, res) => {
         try{
             const {channelId} = req.body;
             const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {

@@ -2,6 +2,10 @@ import mitt from "mitt";
 import {ChzzkChat, ChzzkClient, Followers} from "chzzk";
 import {delay} from "../utils";
 import {LiveInfo} from "../models/LiveInfo";
+import express from "express";
+import {Server} from "http";
+import {WebSocketServer} from "ws";
+import path from "path";
 
 export type ChzzkEvents = {
     chat: ChzzkChat;
@@ -9,7 +13,11 @@ export type ChzzkEvents = {
 };
 
 export class ChzzkService{
-    public readonly client: ChzzkClient
+    readonly client: ChzzkClient
+
+    readonly app = express();
+    readonly server: Server;
+    readonly socket: WebSocketServer;
 
     private _chat: ChzzkChat | undefined
     private _liveInfo: LiveInfo = {
@@ -31,6 +39,12 @@ export class ChzzkService{
 
     constructor(nidAuth: string, nidSession: string){
         this.client = new ChzzkClient({nidAuth, nidSession})
+
+        this.app.use(express.json())
+        this.app.use('/', express.static(path.join(__dirname , './../../public/')))
+
+        this.server = this.app.listen(54321)
+        this.socket = new WebSocketServer({server: this.server, path: '/ws'})
     }
 
     async start(){
