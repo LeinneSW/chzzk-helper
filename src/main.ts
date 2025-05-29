@@ -2,7 +2,9 @@ import {app, BrowserWindow, Tray, dialog, Menu, ipcMain} from "electron";
 import {WebSocket} from 'ws'
 import path from 'path'
 import {ChzzkService} from "./chzzk/ChzzkService";
-import {convertColorCode, initNicknameColorData, isObject, readResource, saveResource} from "./utils";
+import {isObject} from './utils/validate';
+import {readResource, saveResource} from './utils/file';
+import {convertColorCode, initNicknameColorData} from "./utils/chzzk";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
 import {ChzzkChat} from "chzzk";

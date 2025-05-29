@@ -1,11 +1,4 @@
-import {mkdir, readFile, writeFile} from "fs/promises";
-import fsExists from "fs.promises.exists";
-import path from "path";
-import {app} from "electron";
-
-export interface JSONData{
-    [key: string | number]: any;
-}
+import {JSONData} from "../models/JSONData";
 
 const tier2ColorList: JSONData = {}
 const cheatKeyColorList: JSONData = {}
@@ -59,33 +52,4 @@ export const convertColorCode = (colorCode: string, userId: string, chatChannelI
         return cheatKeyColorList[colorCode] || getUserColor(userId + chatChannelId)
     }
     return tier2ColorList[colorCode]
-}
-
-export const delay = (value: number) => new Promise((res, _) => setTimeout(res, value))
-export const isObject = (data: any): boolean => !!data && typeof data === 'object';
-export const isArray = (data: any): boolean => isObject(data) && data.constructor === Array
-export const isNumeric = (data: any): boolean => {
-    typeof data === 'number' || (data = parseInt(data))
-    return !isNaN(data) && isFinite(data)
-}
-
-export const dateToString = (tempData: string | number | Date, full: boolean = false): string => {
-    const date = typeof tempData !== 'object' ? new Date(tempData || 0) : tempData
-    let output = `${date.getFullYear()}-${(date.getMonth() + 1 + '').padStart(2, '0')}-${(date.getDate() + '').padStart(2, '0')}`
-    if(full){
-        output += ` ${(date.getHours() + '').padStart(2, '0')}:${(date.getMinutes() + '').padStart(2, '0')}:${(date.getSeconds() + '').padStart(2, '0')}`
-    }
-    return output
-}
-
-export const getResourcePath = (fileOrDir: string = ''): string => path.join(app.getPath('userData'), 'resources', fileOrDir)
-
-export const readResource = (fileName: string): Promise<string> => readFile(getResourcePath(fileName), 'utf-8')
-
-export const saveResource = async (fileName: string, data: JSONData | string, dir: string = ''): Promise<void> => {
-    dir = getResourcePath(dir)
-    if(!await fsExists(dir)){
-        await mkdir(dir, {recursive: true})
-    }
-    await writeFile(path.join(dir, fileName), typeof data === 'string' ? data : JSON.stringify(data, null, 4), 'utf-8')
 }

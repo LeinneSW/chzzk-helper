@@ -1,6 +1,6 @@
 import mitt from "mitt";
 import {ChzzkChat, ChzzkClient, Followers} from "chzzk";
-import {delay} from "../utils";
+import {delay} from "../utils/system";
 import {LiveInfo} from "../models/LiveInfo";
 import express from "express";
 import {Server} from "http";
