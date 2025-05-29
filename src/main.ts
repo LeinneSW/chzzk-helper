@@ -247,11 +247,11 @@ const createCheckFollowTask = async (service: ChzzkService) => {
     }, 10000);
 }
 
-const acquireAuthPhase = async (session: Electron.Session): Promise<boolean> => {
+const startChzzkService = async (session: Electron.Session): Promise<boolean> => {
     const nidAuth = (await session.cookies.get({name: 'NID_AUT'}))[0]?.value
     const nidSession = (await session.cookies.get({name: 'NID_SES'}))[0]?.value
 
-    if(nidAuth == null || nidSession == null){
+    if(nidAuth == null || nidSession == null){ // 로그인이 되어있지 않은 상태
         return false
     }
 
@@ -424,7 +424,7 @@ app.whenReady().then(async () => {
     window.setMenu(null)
 
     await window.loadURL(`https://chzzk.naver.com/`)
-    if(await acquireAuthPhase(window.webContents.session)){
+    if(await startChzzkService(window.webContents.session)){
         window.destroy()
         return
     }
@@ -433,16 +433,16 @@ app.whenReady().then(async () => {
     window.webContents.on('did-navigate', async (_, newUrl) => {
         const url = new URL(newUrl)
         if(url.hostname === 'chzzk.naver.com' && url.pathname === '/'){ // 로그인 성공
-            if(!await acquireAuthPhase(window.webContents.session)){
+            if(!await startChzzkService(window.webContents.session)){
                 dialog.showMessageBox(window, {
                     type: 'error',
-                    title: '로그인 도중 문제 발생',
-                    message: '로그인 도중 알 수 없는 문제가 발견되었습니다. 프로그램을 다시 실행해주세요.'
-                }).catch(() => window.destroy())
+                    title: '인증 실패',
+                    message: '인증에 실패했습니다. 로그인을 다시 시도해주세요'
+                }).then(() => window.loadURL(`https://nid.naver.com/nidlogin.logout?url=https://nid.naver.com/nidlogin.login`))
             }
-            window.destroy()
         }
     })
+
     window.show()
     dialog.showMessageBox(window, {
         type: 'info',
