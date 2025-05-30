@@ -3,7 +3,7 @@ import {WebSocket} from 'ws'
 import path from 'path'
 import {ChzzkService} from "./chzzk/ChzzkService";
 import {isObject} from './utils/validate';
-import {readResource, saveResource} from './utils/file';
+import {APP_ICON_PATH, readResource, saveResource} from './utils/file';
 import {convertColorCode, getFollowerData, initNicknameColorData} from "./utils/chzzk";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
@@ -320,8 +320,7 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
         }
         res.sendStatus(500);
     })
-    
-    const icon = path.join(__dirname, '../resources/icon.png')
+
     const windowState = windowStateKeeper({
         defaultWidth: 1600,
         defaultHeight: 900,
@@ -331,7 +330,7 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
         y: windowState.y,
         width: windowState.width,
         height: windowState.height,
-        icon,
+        icon: APP_ICON_PATH,
         show: false,
         webPreferences: {
             contextIsolation: true,
@@ -346,21 +345,6 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
     electronShortCut.register(window, 'Ctrl+Shift+I', () => window.webContents.toggleDevTools())
     electronShortCut.register(window, 'Ctrl+Shift+R', () => window.webContents.reloadIgnoringCache())
 
-    const tray = new Tray(icon)
-    tray.setToolTip('치지직 도우미')
-    tray.on('double-click', () => window.show())
-    const trayMenu = Menu.buildFromTemplate([
-        {label: '설정', type: 'normal', click: () => {
-            dialog.showMessageBoxSync(window, {
-                type: 'info',
-                title: `준비중인 기능`,
-                message: '아직 구현되지 않은 기능입니다.'
-            })
-        }},
-        {label: '프로그램 종료', type: 'normal', click: () => window.destroy()},
-    ]);
-    tray.setContextMenu(trayMenu)
-
     window.on('minimize', () => window.hide())
     window.on('close', event => {
         const response = dialog.showMessageBoxSync(window, {
@@ -371,8 +355,10 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
         })
         switch(response){
             case 1:
-                window.hide()
                 event.preventDefault()
+
+                window.hide()
+                showTrayIcon(window)
                 break
             default:
                 return window.destroy()
@@ -381,6 +367,22 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
     await window.loadURL('http://127.0.0.1:54321/')
     window.show()
     return true
+}
+
+const showTrayIcon = (window: BrowserWindow) => {
+    const tray = new Tray(APP_ICON_PATH)
+    tray.setToolTip('치지직 도우미')
+    tray.on('double-click', () => window.show())
+    tray.setContextMenu(Menu.buildFromTemplate([
+        {label: '설정', type: 'normal', click: () => {
+                dialog.showMessageBoxSync(window, {
+                    type: 'info',
+                    title: `준비중인 기능`,
+                    message: '아직 구현되지 않은 기능입니다.'
+                })
+            }},
+        {label: '프로그램 종료', type: 'normal', click: () => window.destroy()},
+    ]))
 }
 
 app.whenReady().then(async () => {
@@ -421,7 +423,7 @@ app.whenReady().then(async () => {
             nodeIntegration: true,
             defaultEncoding: 'utf-8',
         },
-        icon: path.join(__dirname, '../resources/icon.png')
+        icon: APP_ICON_PATH
     })
     window.setMenu(null)
 
