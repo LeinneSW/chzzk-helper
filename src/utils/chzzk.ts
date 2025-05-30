@@ -1,4 +1,6 @@
 import {JSONData} from "../models/JSONData";
+import {Followers} from "chzzk";
+import {ChzzkService} from "../chzzk/ChzzkService";
 
 const tier2ColorList: JSONData = {}
 const cheatKeyColorList: JSONData = {}
@@ -52,4 +54,12 @@ export const convertColorCode = (colorCode: string, userId: string, chatChannelI
         return cheatKeyColorList[colorCode] || getUserColor(userId + chatChannelId)
     }
     return tier2ColorList[colorCode]
+}
+
+export const getFollowerData = async (service: ChzzkService, size: number = 10) => {
+    let data: Followers | undefined;
+    try{
+        data = await service.client.manage.followers(service.liveInfo.channelId, {size})
+    }catch{}
+    return data || {page: 0, size: 0, totalCount: 0, totalPages: 0, data: []}
 }

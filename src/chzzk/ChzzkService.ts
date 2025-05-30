@@ -6,11 +6,7 @@ import express from "express";
 import {Server} from "http";
 import {WebSocketServer} from "ws";
 import path from "path";
-
-export type ChzzkEvents = {
-    chat: ChzzkChat;
-    liveInfo: LiveInfo;
-};
+import {ChzzkEvents} from "../models/ChzzkEvents";
 
 export class ChzzkService{
     readonly client: ChzzkClient
@@ -105,13 +101,5 @@ export class ChzzkService{
 
     get liveInfo(): LiveInfo{
         return {...this._liveInfo} // 데이터 조작 방지를 위해 복제
-    }
-
-    async getFollowerData(size: number = 10): Promise<Followers>{
-        let data: Followers | undefined;
-        try{
-            data = await this.client.manage.followers(this.liveInfo.channelId, {size})
-        }catch{}
-        return data || {page: 0, size: 0, totalCount: 0, totalPages: 0, data: []}
     }
 }

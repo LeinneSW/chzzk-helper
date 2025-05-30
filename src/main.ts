@@ -4,7 +4,7 @@ import path from 'path'
 import {ChzzkService} from "./chzzk/ChzzkService";
 import {isObject} from './utils/validate';
 import {readResource, saveResource} from './utils/file';
-import {convertColorCode, initNicknameColorData} from "./utils/chzzk";
+import {convertColorCode, getFollowerData, initNicknameColorData} from "./utils/chzzk";
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
 import {ChzzkChat} from "chzzk";
@@ -219,7 +219,7 @@ const createCheckFollowTask = async (service: ChzzkService) => {
         }
     }catch{
         const list = [];
-        const followData = await service.getFollowerData(10000);
+        const followData = await getFollowerData(service, 10000);
         followCount = followData.totalCount;
         for(const user of followData.data){
             list.push(user.user.userIdHash)
@@ -228,7 +228,7 @@ const createCheckFollowTask = async (service: ChzzkService) => {
     }
     setInterval(async () => {
         let isAdded = false;
-        const followData = await service.getFollowerData(10);
+        const followData = await getFollowerData(service, 10);
         followCount = followData.totalCount;
         for(const user of followData.data){
             if(!followList.includes(user.user.userIdHash)){
