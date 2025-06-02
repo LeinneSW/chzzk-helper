@@ -2,7 +2,6 @@ import path from "path";
 import {app} from "electron";
 import {mkdir, readFile, writeFile} from "fs/promises";
 import fsExists from "fs.promises.exists";
-import {JSONData} from "../models/JSONData";
 
 export const APP_ICON_PATH = (() => path.join(__dirname, '../resources/icon.png'))();
 
@@ -14,7 +13,7 @@ export const readResource = (fileName: string): Promise<string> => {
     return readFile(getResourcePath(fileName), 'utf-8')
 }
 
-export const saveResource = async (fileName: string, data: JSONData | string, dir: string = ''): Promise<void> => {
+export const saveResource = async (fileName: string, data: Record<string, any> | string, dir: string = ''): Promise<void> => {
     dir = getResourcePath(dir)
     if(!await fsExists(dir)){
         await mkdir(dir, {recursive: true})

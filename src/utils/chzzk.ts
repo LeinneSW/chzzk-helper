@@ -1,9 +1,8 @@
-import {JSONData} from "../models/JSONData";
 import {Followers} from "chzzk";
 import {ChzzkService} from "../chzzk/ChzzkService";
 
-const tier2ColorList: JSONData = {}
-const cheatKeyColorList: JSONData = {}
+const tier2ColorList: Record<string, any> = {}
+const cheatKeyColorList: Record<string, any> = {}
 
 const nicknameColors = [
     "#EEA05D", "#EAA35F", "#E98158", "#E97F58",

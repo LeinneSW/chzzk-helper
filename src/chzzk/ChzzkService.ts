@@ -1,12 +1,12 @@
 import mitt from "mitt";
 import {ChzzkChat, ChzzkClient} from "chzzk";
 import {delay} from "../utils/system";
-import {LiveInfo} from "../models/LiveInfo";
 import express from "express";
 import {Server} from "http";
 import {WebSocketServer} from "ws";
 import path from "path";
-import {ChzzkEvents} from "../models/ChzzkEvents";
+import {ChzzkEvents} from "./ChzzkEvents";
+import {LiveInfo} from "./LiveInfo";
 
 export class ChzzkService{
     readonly client: ChzzkClient
