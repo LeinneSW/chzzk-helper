@@ -443,6 +443,8 @@ app.whenReady().then(async () => {
                     title: '인증 실패',
                     message: '인증에 실패했습니다. 로그인을 다시 시도해주세요'
                 }).then(() => window.loadURL(`https://nid.naver.com/nidlogin.logout?url=https://nid.naver.com/nidlogin.login`))
+            }else{
+                window.destroy()
             }
         }
     })
