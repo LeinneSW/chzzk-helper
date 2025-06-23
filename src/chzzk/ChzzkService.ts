@@ -44,18 +44,22 @@ export class ChzzkService{
     }
 
     async start(){
-        // TODO: error count check
         let channelId = ''
-        while(!channelId){
+        let errorCount = 0
+        for(; errorCount < 5 && !channelId; errorCount++){
             try{
                 channelId = (await this.client.user()).userIdHash
             }catch{
                 await delay(1000)
             }
         }
+        if(channelId.length !== 45){
+            return false
+        }
         this._liveInfo.channelId = channelId
         await this.refreshLiveStatus()
         setInterval(async () => this.refreshLiveStatus(), 10 * 1000);
+        return true
     }
 
     private async refreshLiveStatus(){

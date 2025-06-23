@@ -262,7 +262,14 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
     createEmojiTask(service)
     createChattingTask(service)
     await createCheckFollowTask(service)
-    await service.start()
+    if(!(await service.start())){
+        await dialog.showMessageBox({
+            type: 'error',
+            title: '네이버 서비스 연결 실패',
+            message: '네이버 서비스 연결에 실패했습니다. 프로그램을 종료합니다.'
+        })
+        return true
+    }
 
     // 웹 end-point 정의
     service.app.get('/user-info', async (_, res) => {
