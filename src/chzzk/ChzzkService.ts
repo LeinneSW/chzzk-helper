@@ -53,7 +53,7 @@ export class ChzzkService{
                 await delay(1000)
             }
         }
-        if(channelId.length !== 45){
+        if(channelId.length !== 32){
             return false
         }
         this._liveInfo.channelId = channelId
