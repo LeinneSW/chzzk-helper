@@ -109,7 +109,7 @@ const updateNotice = (notice) => {
     }else{
         noticeContainer.classList.remove('hide');
         noticeContainer.innerHTML = `<div>${notice.registerProfile.nickname}님이 고정</div><div>${notice.message}</div>`;
-        noticeContainer.onclick = () => {
+        noticeContainer.dblclick = () => {
             fetch('/notice', {
                 method: "DELETE",
                 headers: {
