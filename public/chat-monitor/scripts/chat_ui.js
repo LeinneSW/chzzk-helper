@@ -109,7 +109,16 @@ const updateNotice = (notice) => {
     }else{
         noticeContainer.classList.remove('hide');
         noticeContainer.innerHTML = `<div>${notice.registerProfile.nickname}님이 고정</div><div>${notice.message}</div>`;
+
+        let clickTimer;
+        noticeContainer.onclick = (e) => {
+            if(e.detail === 1){
+                // 브라우저 기본값(200 ms)보다 약간 크게
+                clickTimer = setTimeout(async () => await navigator.clipboard.writeText(notice.message), 220)
+            }
+        }
         noticeContainer.dblclick = () => {
+            clearTimeout(clickTimer);
             fetch('/notice', {
                 method: "DELETE",
                 headers: {
@@ -123,6 +132,7 @@ const updateNotice = (notice) => {
                     const data = await res.json();
                     if(res.ok && data.code === 200){
                         noticeContainer.onclick = () => {};
+                        noticeContainer.dblclick = () => {};
                     }else{
                         showToast('공지 제거 실패! 권한이 없습니다.')
                     }
