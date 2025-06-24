@@ -114,10 +114,10 @@ const updateNotice = (notice) => {
         noticeContainer.onclick = (e) => {
             if(e.detail === 1){
                 // 브라우저 기본값(200 ms)보다 약간 크게
-                clickTimer = setTimeout(async () => await navigator.clipboard.writeText(notice.message), 220)
+                clickTimer = setTimeout(async () => await navigator.clipboard.writeText(notice.message), 400)
             }
         }
-        noticeContainer.dblclick = () => {
+        noticeContainer.ondblclick = () => {
             clearTimeout(clickTimer);
             fetch('/notice', {
                 method: "DELETE",
