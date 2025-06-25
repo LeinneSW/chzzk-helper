@@ -352,7 +352,10 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
     electronShortCut.register(window, 'Ctrl+Shift+I', () => window.webContents.toggleDevTools())
     electronShortCut.register(window, 'Ctrl+Shift+R', () => window.webContents.reloadIgnoringCache())
 
-    window.on('minimize', () => window.hide())
+    window.on('minimize', () => {
+        window.hide()
+        showTrayIcon(window)
+    })
     window.on('close', event => {
         const response = dialog.showMessageBoxSync(window, {
             type: 'question',
@@ -362,10 +365,9 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
         })
         switch(response){
             case 1:
-                event.preventDefault()
-
                 window.hide()
                 showTrayIcon(window)
+                event.preventDefault()
                 break
             default:
                 return window.destroy()
@@ -379,9 +381,15 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
 const showTrayIcon = (window: BrowserWindow) => {
     const tray = new Tray(APP_ICON_PATH)
     tray.setToolTip('치지직 도우미')
-    tray.on('double-click', () => window.show())
+    tray.on('double-click', () => {
+        window.show()
+        tray.destroy()
+    })
     tray.setContextMenu(Menu.buildFromTemplate([
-        {label: '설정', type: 'normal', click: () => {
+        {
+            label: '설정',
+            type: 'normal',
+            click: () => {
                 dialog.showMessageBoxSync(window, {
                     type: 'info',
                     title: `준비중인 기능`,
@@ -390,6 +398,7 @@ const showTrayIcon = (window: BrowserWindow) => {
             }},
         {label: '프로그램 종료', type: 'normal', click: () => window.destroy()},
     ]))
+    return tray;
 }
 
 app.whenReady().then(async () => {
