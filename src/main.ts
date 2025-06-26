@@ -401,7 +401,16 @@ const showTrayIcon = (window: BrowserWindow) => {
     return tray;
 }
 
+let singleClient = true;
+if(!app.requestSingleInstanceLock()){ // 한개의 클라이언트만 실행될 수 있도록
+    singleClient = false;
+    app.quit();
+}
+
 app.whenReady().then(async () => {
+    if(!singleClient){
+        return;
+    }
     await initNicknameColorData();
 
     // ipc method 정의
