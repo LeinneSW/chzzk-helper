@@ -148,7 +148,7 @@ const createChattingTask = (service: ChzzkService) => {
                 badgeList.push(viewerBadge.badge.imageUrl)
             }
 
-            if(history.length >= 100){
+            if(history.length >= 200){
                 history.shift();
             }
             const jsonStr = JSON.stringify({
@@ -167,6 +167,12 @@ const createChattingTask = (service: ChzzkService) => {
             history.push(jsonStr)
             for(const client of chattingSocket){
                 client.send(jsonStr)
+            }
+        })
+        chat.on('blind', blindData => {
+            history = history.filter(value => value.includes('"date":') && value.includes(blindData.messageTime + ''));
+            for(const client of chattingSocket){
+                client.send(JSON.stringify({blind: +blindData.messageTime}))
             }
         })
     });

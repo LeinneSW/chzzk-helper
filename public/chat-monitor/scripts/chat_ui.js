@@ -97,6 +97,10 @@ const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white'
     }
     updateScrollButton(isAtBottom);
 }
+const removeMessageBox = (msecs) => {
+    if(!Number.isFinite(msecs)) return;
+    document.getElementById(msecs + '')?.remove();
+}
 
 const updateNotice = (notice) => {
     if(typeof notice !== 'object') { // null or object

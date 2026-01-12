@@ -41,7 +41,7 @@ const connect = () => {
     }
     client.onmessage = e => {
         try{
-            const {chat, notice, liveInfo} = JSON.parse(e.data.toString());
+            const {chat, blind, notice, liveInfo} = JSON.parse(e.data.toString());
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
@@ -49,6 +49,7 @@ const connect = () => {
                     addTTSQueue(profile, message)
                 }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
+                removeMessageBox(blind)
             }
             updateNotice(notice)
         }catch(e){
