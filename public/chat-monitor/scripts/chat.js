@@ -45,6 +45,9 @@ const connect = () => {
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
+                if(profile.userRoleCode === 'streamer' && message.startsWith('!tts')){
+                    localStorage.setItem('enableTTS', +(message.split(' ')[1]?.toLowerCase() === 'on') + '')
+                }
                 if(connectTime < date){
                     addTTSQueue(profile, message)
                 }

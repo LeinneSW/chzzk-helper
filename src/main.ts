@@ -156,6 +156,7 @@ const createChattingTask = (service: ChzzkService) => {
                     profile: {
                         nickname: chat.profile.nickname,
                         userIdHash: chat.profile.userIdHash,
+                        userRoleCode: chat.profile.userRoleCode,
                     },
                     colorData,
                     message: chat.message,
