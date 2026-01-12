@@ -117,8 +117,16 @@ const updateNotice = (notice) => {
         let clickTimer;
         noticeContainer.onclick = (e) => {
             if(e.detail === 1){
-                // 브라우저 기본값(200 ms)보다 약간 크게
-                clickTimer = setTimeout(async () => await navigator.clipboard.writeText(notice.message), 400)
+                // 더블클릭이 아닌경우 내용 복제(dblclick은 약 200ms 뒤 실행되므로 200보다 소폭높은 timeout을 건다)
+                clickTimer = setTimeout(async () => {
+                    try{
+                        await navigator.clipboard.writeText(notice.message)
+                        showToast('내용이 복사되었습니다.')
+                    }catch(e){
+                        console.error(e)
+                        showToast(e.toString())
+                    }
+                }, 400)
             }
         }
         noticeContainer.ondblclick = () => {
