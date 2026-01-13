@@ -2,56 +2,38 @@ const ttsQueue = [];
 let isPlaying = false;
 
 const emojiRegex = /\p{Extended_Pictographic}/gu; // 이모지 구분 정규식
-const ttsSettings = (() => {
-    const defaultOptions = {
-        name: { // 이름 필터링(특정 규칙의 이름은 TTS가 읽지 않음)
-            enabled: true,
-            regex: /^.*(봇|bot)$/i,
-        },
-        message: { // 문자열 필터링(특정 채팅 생략되어 재생되는 기능)
-            enabled: false,
-            regex: /\p{Extended_Pictographic}|\{:.*:\}/gu,
-        },
-        messageSkip: { // 문자열 스킵(특정 규칙의 채팅은 아예 TTS로 읽지 않음)
-            enabled: true,
-            regex: /^[!$/].*$/u, // 각종 명령어들 TTS 제외처리
-        },
-        maximumPlayTime: 0, // 1회 채팅당 최대 재생 시간, 초단위
-    };
+export const ttsSettings = {
+    get enabled(){
+        return toBoolean(localStorage.getItem('enableTTS'))
+    },
+    set enabled(value){
+        localStorage.setItem('enableTTS', toBoolean(value) + '');
+    },
 
-    let storageData = localStorage.getItem('ttsSettings') || '';
-    try{
-        const {name, message, messageSkip, maximumPlayTime} = JSON.parse(storageData);
-        typeof name?.enabled == 'boolean' && (defaultOptions.name.enabled = name.enabled);
-        typeof name?.regex == 'string' && (defaultOptions.name.regex = name.regex);
+    get maximumPlayTime(){
+        return +localStorage.getItem('ttsMaxTime') || 0
+    },
+    set maximumPlayTime(value){
+        localStorage.setItem('ttsMaxTime', (+value || 0) + '');
+    },
 
-        typeof message?.enabled == 'boolean' && (defaultOptions.message.enabled = message.enabled);
-        typeof message?.regex == 'string' && (defaultOptions.message.regex = message.regex);
+    get volume(){
+        return +localStorage.getItem('ttsVolume') || 100;
+    },
+    set volume(value){
+        localStorage.setItem('ttsVolume', (+value || 0) + '');
+    },
 
-        typeof messageSkip?.enabled == 'boolean' && (defaultOptions.messageSkip.enabled = messageSkip.enabled);
-        typeof messageSkip?.regex == 'string' && (defaultOptions.messageSkip.regex = messageSkip.regex);
-
-        maximumPlayTime != null && (defaultOptions.maximumPlayTime = +maximumPlayTime || defaultOptions.maximumPlayTime);
-    }catch(e){
-        storageData = ''
-        console.error(e);
-    }
-    if(!storageData){
-        localStorage.setItem('ttsSettings', JSON.stringify(defaultOptions));
-    }
-    return defaultOptions;
-})();
-
-const saveOptions = () => {
-    try{
-        localStorage.setItem('ttsSettings', JSON.stringify(ttsSettings));
-    }catch(e){
-        console.error(e);
-    }
-}
+    // 닉네임 무시 (해당되는 닉네임의 채팅 안읽음)
+    ignoreName: createSetting('ttsIgnoreName', /^.*(봇|bot)$/i),
+    // 메시지 무시 (해당되는 메시지 안읽음)
+    ignoreMessage: createSetting('ttsIgnoreMessage', /^[!$/].*$/u),
+    // 메시지 필터링 (특정 문자를 ''로 치환)
+    filterMessage: createSetting('ttsFilterMessage', /\p{Extended_Pictographic}|\{:.*:\}/gu),
+};
 
 // 반복 단어 파악(도배 방지를 위해 추가)
-const normalizeRepeatedText = (text) => {
+function normalizeRepeatedText(text){
     const len = Math.floor(text.length / 4);
     for(let i = 1; i <= len; ++i){ // 문자열의 길이의 1/4 까지만 확인(4회이상 반복하는지 파악)
         let index = 0, count = 1;
@@ -67,20 +49,20 @@ const normalizeRepeatedText = (text) => {
     return text;
 }
 
-const addTTSQueue = (profile, text) => {
-    if(localStorage.getItem('enableTTS') === '0'){
+export function addTTSQueue(profile, text){
+    if(!ttsSettings.enabled){
         return;
     }
 
     if(
-        (ttsSettings.name.enabled && ttsSettings.name.regex.test(profile.nickname)) || // 닉네임 필터링
-        (ttsSettings.messageSkip.enabled && ttsSettings.messageSkip.regex.test(text)) // 문자열 필터링
+        (ttsSettings.ignoreName.enabled && ttsSettings.ignoreName.regex.test(profile.nickname)) || // 닉네임 무시
+        (ttsSettings.ignoreMessage.enabled && ttsSettings.ignoreMessage.regex.test(text)) // 메시지 무시
     ){
         return;
     }
 
-    if(ttsSettings.message.enabled){
-        text = text.replace(ttsSettings.message.regex, '');
+    if(ttsSettings.filterMessage.enabled){
+        text = text.replace(ttsSettings.filterMessage.regex, '');
     }
 
     ttsQueue.push(normalizeRepeatedText(text));
@@ -90,12 +72,12 @@ const addTTSQueue = (profile, text) => {
 // 큐의 첫 번째 항목을 가져와 TTS 실행
 const processQueue = ()  => {
     if(ttsQueue.length > 0 && !isPlaying){
-        playTTS(ttsQueue.shift());
+        playTextToSpeech(ttsQueue.shift());
     }
 }
 
 // 텍스트를 음성으로 불러와 재생
-const playTTS = (text) => {
+const playTextToSpeech = (text) => {
     let ttsUrl;
     try{
         let urlData = localStorage.getItem('ttsURL') || '';
@@ -104,11 +86,6 @@ const playTTS = (text) => {
         ttsUrl = new URL(location.origin + "/text-to-speech");
     }
     ttsUrl.searchParams.append('text', text);
-    // TODO: maximumPlayTime 기능 구현
-    /*const maxTime = (+options.maximumPlayTime || 0);
-    if(maxTime > 0){
-        playTTSByGoogle(text);
-    }*/
     isPlaying = true;
     const audio = new Audio(ttsUrl.toString());
     const volume = +localStorage.getItem('ttsVolume') || 100;
@@ -184,7 +161,7 @@ window.addEventListener('load', () => {
             return;
         }
 
-        playTTS('TTS 활성화');
+        playTextToSpeech('TTS 활성화');
         document.onclick = () => {};
     }
 })

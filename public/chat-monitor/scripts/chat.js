@@ -1,8 +1,10 @@
+import {addTTSQueue} from "./tts.js";
+import {addMessageBox, clearChatBox, removeMessageBox, updateLiveInfoUi, updateNotice} from './chat_ui.js'
+
 let client;
+export let currentLiveInfo;
 
-const getRequestUrl = () => window.localStorage.getItem('wsURL') || location.host
-
-const sendChat = async (event) => {
+async function sendChat(event){
     if(client?.readyState !== WebSocket.OPEN){
         showToast('치지직 도우미가 종료된것 같습니다. 치지직 도우미를 켠 후 다시 시도해주세요.')
         return
@@ -27,12 +29,22 @@ const sendChat = async (event) => {
     input.focus()
 }
 
+const updateLiveInfo = (newLiveInfo) => {
+    if(!newLiveInfo || typeof newLiveInfo !== 'object'){
+        return;
+    }
+
+    updateLiveInfoUi(newLiveInfo)
+    currentLiveInfo = newLiveInfo;
+}
+
 const connect = () => {
     if(client?.readyState === WebSocket.OPEN){
         return;
     }
     let connectTime = 0
-    client = new WebSocket(`ws://${getRequestUrl()}/ws`)
+    let wsUrl = window.localStorage.getItem('wsURL') || location.host;
+    client = new WebSocket(`ws://${wsUrl}/ws`)
     client.onopen = () => {
         clearChatBox()
         updateNotice(null)

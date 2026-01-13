@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>치지직 채팅</title>
-    <script src="./scripts/chat.js"></script>
-    <script src="./scripts/chat_ui.js"></script>
-    <script src="./scripts/navbar.js"></script>
-    <script src='./scripts/setting.js'></script>
-    <script src="./scripts/toast.js"></script>
-    <script src="./scripts/tts.js"></script>
+    <script type="module" src="./scripts/chat.js"></script>
+    <script type="module" src="./scripts/navbar.js"></script>
+    <script type="module" src='./scripts/setting.js'></script>
 
     <link rel="stylesheet" href="./css/chat.css">
     <link rel="stylesheet" href="./css/live.css">
@@ -38,14 +35,32 @@
             </div>
             <div style="margin-bottom: 20px; font-size: 0;"></div>
             <div class="settings-title">TTS 설정</div>
-            <!--<div class="option-title" data-description="TTS를 읽지 않게 할 닉네임을 설정합니다">닉네임 필터링</div>
+            <div class="option-title" data-description="특정 닉네임을 무시합니다">닉네임 무시</div>
             <div style="font-size: 0 !important">
-                <select class="option-input" id="tts-name-filter" data-save-name="ttsNameFilter">
-                    <option value="bot">봇</option>
-                    <option value="custom">커스텀</option>
-                    <option value="none">없음</option>
-                </select>
-            </div>-->
+                <input class="option-input" type="radio" name="ttsIgnoreName" value="true" id="ttsNameOn" data-save-name="ttsIgnoreName">
+                <label class="option-label" for="ttsNameOn">활성화</label>
+                <input class="option-input" type="radio" name="ttsIgnoreName" value="false" id="ttsNameOff" data-save-name="ttsIgnoreName" checked>
+                <label class="option-label" for="ttsNameOff">비활성화</label>
+            </div>
+            <div class="option-title" data-description="특정 메시지를 제외합니다">메시지 무시</div>
+            <div style="font-size: 0 !important">
+                <input class="option-input" type="radio" name="ttsIgnoreMessage" value="true" id="ttsSkipOn" data-save-name="ttsIgnoreMessage">
+                <label class="option-label" for="ttsSkipOn">활성화</label>
+                <input class="option-input" type="radio" name="ttsIgnoreMessage" value="false" id="ttsSkipOff" data-save-name="ttsIgnoreMessage"checked>
+                <label class="option-label" for="ttsSkipOff">비활성화</label>
+            </div>
+            <div class="option-title" data-description="채팅 중 특정 단어를 생략하여 읽습니다">메시지 필터링</div>
+            <div style="font-size: 0 !important">
+                <input class="option-input" type="radio" name="ttsFilterMessage" value="true" id="ttsMsgFilterOn" data-save-name="ttsFilterMessage">
+                <label class="option-label" for="ttsMsgFilterOn">활성화</label>
+                <input class="option-input" type="radio" name="ttsFilterMessage" value="false" id="ttsMsgFilterOff" data-save-name="ttsFilterMessage" checked>
+                <label class="option-label" for="ttsMsgFilterOff">비활성화</label>
+            </div>
+            <div class="option-title" data-description="TTS의 최대 재생시간을 설정합니다. (0초: 제한 없음)">최대 재생 시간</div>
+            <div class="slider-container">
+                <input id="tts-max-time" class="slider" type="range" min="0" max="20" value="0" data-suffix="초" data-save-name="ttsMaxTime">
+                <label for="tts-max-time" class="slider-value"></label>
+            </div>
             <div class="option-title" data-description="재생될 음성의 크기를 조절합니다">음성 크기</div>
             <div class="slider-container">
                 <input class="slider" id="tts-volume" type="range" min="1" max="100" value="100" data-suffix="%" data-save-name="ttsVolume">

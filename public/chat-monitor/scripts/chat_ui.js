@@ -1,17 +1,6 @@
-let currentLiveInfo;
-
-const escapeHTML = (text) => text.replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-const formatTime = (msecs) => {
-    msecs = new Date(msecs)
-    const h = String(msecs.getHours()).padStart(2, '0')
-    const m = String(msecs.getMinutes()).padStart(2, '0')
-    return `[${h}:${m}]`
-}
+import {escapeHTML, formatTime} from "./utils.js";
+import {currentLiveInfo} from "./chat.js";
+import {showToast} from "./toast.js";
 
 const MAX_MESSAGES = 1000;
 const HEIGHT_THRESHOLD = 8; // 스크롤 여유 픽셀
@@ -29,7 +18,15 @@ const updateScrollButton = (isAtBottom) => {
     }
 }
 
-const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
+/**
+ * @param {Record<string, any>} profile
+ * @param {string} message
+ * @param {number} msecs
+ * @param {string|Record<string, any>} colorData
+ * @param {Record<string, string>} emojiList
+ * @param {string[]} badgeList
+ */
+export const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white', emojiList = {}, badgeList = []) => {
     const chatBox = document.getElementById('chat-container');
     const messageBoxDiv = document.createElement('div')
     messageBoxDiv.id = msecs + ''
@@ -97,12 +94,12 @@ const addMessageBox = (profile, message, msecs = Date.now(), colorData = 'white'
     }
     updateScrollButton(isAtBottom);
 }
-const removeMessageBox = (msecs) => {
+export const removeMessageBox = (msecs) => {
     if(!Number.isFinite(msecs)) return;
     document.getElementById(msecs + '')?.remove();
 }
 
-const updateNotice = (notice) => {
+export const updateNotice = (notice) => {
     if(typeof notice !== 'object') { // null or object
         return;
     }
@@ -154,29 +151,24 @@ const updateNotice = (notice) => {
     }
 }
 
-const updateLiveInfo = (newLiveInfo) => {
-    if(!newLiveInfo || typeof newLiveInfo !== 'object'){
-        return;
-    }
-
+export const updateLiveInfoUi = (newLiveInfo) => {
     if(currentLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== currentLiveInfo?.chatChannelId){
         // 채팅 ID가 달라진 경우 새 채팅 채널에 접속했다는 뜻임
         document.querySelectorAll('.message-box').forEach(element => element.remove())
     }
 
-    currentLiveInfo = newLiveInfo;
     const avatar = document.getElementById('streamer-avatar');
-    avatar.className = currentLiveInfo.isLive ? '' : 'offline';
+    avatar.className = newLiveInfo.isLive ? '' : 'offline';
 
     const divider = document.getElementById('divider');
     const userCount = document.getElementById('user-count');
     const liveTitle = document.getElementById('live-title');
     const liveCategory = document.getElementById('live-category');
-    if(currentLiveInfo.isLive){
+    if(newLiveInfo.isLive){
         divider.textContent = '|';
-        liveTitle.textContent = currentLiveInfo.title;
-        liveCategory.textContent = currentLiveInfo.category.name;
-        userCount.innerHTML = `<div></div>${currentLiveInfo.viewership}`;
+        liveTitle.textContent = newLiveInfo.title;
+        liveCategory.textContent = newLiveInfo.category.name;
+        userCount.innerHTML = `<div></div>${newLiveInfo.viewership}`;
     }else{
         divider.textContent = '';
         liveTitle.textContent = '';
@@ -185,7 +177,7 @@ const updateLiveInfo = (newLiveInfo) => {
     }
 }
 
-const clearChatBox = () => {
+export const clearChatBox = () => {
     const chatBox = document.getElementById('chat-container');
     while(chatBox.firstChild){
         chatBox.removeChild(chatBox.firstChild);

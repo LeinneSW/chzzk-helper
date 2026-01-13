@@ -1,3 +1,7 @@
+import {currentLiveInfo} from "./chat.js";
+import {showToast} from "./toast.js";
+import {ttsSettings} from "./tts.js";
+
 const toggleState = (button) => {
     for(const child of button.children){
         child.classList.toggle('hide');
@@ -18,9 +22,8 @@ window.addEventListener("load", () => {
     // TTS 활성화 전환 버튼
     const ttsButton = document.getElementById('tts-button');
     ttsButton.addEventListener('click', () => {
-        const enabled = localStorage.getItem('enableTTS') || '1'
-        localStorage.setItem('enableTTS', (+enabled + 1) % 2 + '')
-        showToast(enabled === '1' ? 'TTS 기능이 비활성화 되었습니다.' : 'TTS 기능이 활성화 되었습니다')
+        ttsSettings.enabled = !ttsSettings.enabled;
+        showToast(ttsSettings.enabled ? 'TTS 기능이 활성화 되었습니다' : 'TTS 기능이 비활성화 되었습니다.')
     })
 
     // 공지 등록 기능

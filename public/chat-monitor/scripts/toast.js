@@ -1,4 +1,4 @@
-function showToast(msg){
+export function showToast(msg){
     // 컨테이너 없으면 생성
     let box = document.getElementById('toast-container');
     if(!box){
