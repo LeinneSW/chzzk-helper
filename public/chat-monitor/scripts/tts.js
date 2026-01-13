@@ -1,6 +1,7 @@
+import {toBoolean, createSetting} from "./utils.js";
+
 const ttsQueue = [];
 let isPlaying = false;
-
 const emojiRegex = /\p{Extended_Pictographic}/gu; // 이모지 구분 정규식
 export const ttsSettings = {
     get enabled(){
