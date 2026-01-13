@@ -78,7 +78,7 @@ function processQueue(){
 }
 
 // 텍스트를 음성으로 불러와 재생
-function playTextToSpeech(text){
+const playTextToSpeech = (text) => {
     let ttsUrl;
     try{
         let urlData = localStorage.getItem('ttsURL') || '';
@@ -87,73 +87,71 @@ function playTextToSpeech(text){
         ttsUrl = new URL(location.origin + "/text-to-speech");
     }
     ttsUrl.searchParams.append('text', text);
+
+    // 초기 설정
     isPlaying = true;
+    let currentVolume = ttsSettings.volume / 100;
     const audio = new Audio(ttsUrl.toString());
-    const volume = +localStorage.getItem('ttsVolume') || 100;
-    audio.volume = volume / 100;
+    audio.volume = currentVolume;
+
+    // 다음 재생을 위한 정리 함수
     const playNext = () => {
+        if(!isPlaying) return; // 중복 실행 방지
+
         isPlaying = false;
+        audio.onended = null;
+        audio.pause();
         processQueue();
-    }
+    };
+
     audio.onended = playNext;
-    audio.play().catch(playNext);
-}
 
-// 내부적으로 Google API를 사용중일때엔 CORS에대한 위험이 없음
-const playTTSByGoogle = async (text) => {
-    isPlaying = true;
-    try{
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const res = await fetch(`/text-to-speech?text=${encodeURIComponent(text)}`);
-        const arrayBuffer = await res.arrayBuffer();
-        const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
-        const maxTime = (+ttsSettings.maximumPlayTime || 0);
-        const duration = audioBuffer.duration;
-
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 1;
-
-        const audioBufferSource = ctx.createBufferSource();
-        audioBufferSource.buffer = audioBuffer;
-        audioBufferSource.connect(gainNode).connect(ctx.destination);
-
-        // fade-out 조건: 실제 길이가 maxTime보다 길 경우에만 적용
-        if(duration > maxTime){
-            const fadeTime = 0.4; // 줄어들게될 시간, secs
-            const fadeOutStart = maxTime - .5;
-            setTimeout(() => {
-                const interval = 50; // 간격, msecs
-                const steps = Math.ceil(fadeTime * 100 / interval);
-                let currentStep = 0;
-                const volumeFade = setInterval(() => {
-                    currentStep++;
-                    gainNode.gain.value = 1 - (currentStep / steps);
-                    if(currentStep >= steps){
-                        clearInterval(volumeFade);
-                    }
-                }, interval);
-            }, fadeOutStart * 1000);
-
-            // 최대 재생 시간 경과 후 중단
-            setTimeout(() => {
-                audioBufferSource.stop();
-                ctx.close();
-                isPlaying = false;
-                processQueue();
-            }, maxTime * 1000);
-        }else{
-            audioBufferSource.onended = () => {
-                ctx.close();
-                isPlaying = false;
-                processQueue();
-            };
-        }
-        audioBufferSource.start();
-    }catch(error){
-        isPlaying = false;
-        processQueue();
+    // --- 최대 재생 시간 제한 로직 ---
+    const maxTime = ttsSettings.maximumPlayTime;
+    if(maxTime <= 0){
+        audio.play().catch(playNext);
+        return;
     }
+
+    // 0.5초 동안 서서히 볼륨 축소
+    let fadeDuration = 0.5;
+    audio.addEventListener('loadedmetadata', () => {
+        // 오디오가 제한 시간보다 짧으면 간섭하지 않음
+        if(audio.duration !== Infinity){
+            fadeDuration = Math.min(0.5, audio.duration - maxTime);
+        }
+    });
+
+    audio.addEventListener('playing', () => {
+        if(fadeDuration <= 0) return;
+
+        let startFadeTime = maxTime - fadeDuration;
+        if(startFadeTime < 0) startFadeTime = 0;
+
+        setTimeout(() => {
+            if(audio.paused || !isPlaying) return;
+
+            const intervalTime = 20; // 20ms(50fps) 씩 volume 감소
+            const steps = (fadeDuration * 1000) / intervalTime;
+            const volumeStep = currentVolume / steps;
+
+            const fadeInterval = setInterval(() => {
+                if(!isPlaying || audio.paused){
+                    clearInterval(fadeInterval);
+                    return;
+                }
+
+                if(audio.volume > volumeStep){
+                    audio.volume -= volumeStep;
+                }else{
+                    audio.volume = 0;
+                    clearInterval(fadeInterval);
+                    playNext(); // 종료 및 다음 큐 실행
+                }
+            }, intervalTime);
+
+        }, startFadeTime * 1000);
+    });
 }
 
 window.addEventListener('load', () => {
