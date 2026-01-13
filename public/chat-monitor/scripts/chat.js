@@ -55,6 +55,7 @@ const connect = () => {
     client.onmessage = e => {
         try{
             const {chat, blind, notice, liveInfo} = JSON.parse(e.data.toString());
+            removeMessageBox(blind)
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
@@ -65,7 +66,6 @@ const connect = () => {
                     pushTextToSpeech(message, profile.nickname)
                 }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
-                removeMessageBox(blind)
             }
             updateNotice(notice)
         }catch(e){
