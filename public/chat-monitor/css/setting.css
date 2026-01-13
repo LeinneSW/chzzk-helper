@@ -47,6 +47,7 @@
     position: absolute;
     border-radius: 8px;
     background-color: #616161;
+    pointer-events: none;
 }
 
 .slider-container{
