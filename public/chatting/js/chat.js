@@ -133,7 +133,7 @@ const connect = () => {
     }
     client.onmessage = e => {
         try{
-            const {chat, notice, liveInfo} = JSON.parse(e.data.toString());
+            const {chat, blind, notice, liveInfo} = JSON.parse(e.data.toString());
             const newChatChannelId = liveInfo?.chatChannelId
             if(newChatChannelId && newChatChannelId !== chatChannelId){
                 if(chatChannelId){
@@ -147,6 +147,7 @@ const connect = () => {
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
             }
+            Number.isFinite(blind) && document.getElementById(blind + '')?.remove();
             if(typeof notice === 'object'){ // null or object
                 // TODO: 공지 출력 기능
             }
