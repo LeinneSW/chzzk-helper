@@ -100,7 +100,7 @@ export const removeMessageBox = (msecs) => {
 }
 
 export const updateNotice = (notice) => {
-    if(typeof notice !== 'object') { // null or object
+    if(typeof notice !== 'object') { // notice: null(제거) or object(공지)
         return;
     }
 
@@ -152,8 +152,9 @@ export const updateNotice = (notice) => {
 }
 
 export const updateLiveInfoUi = (newLiveInfo) => {
+    // 채팅 ID가 달라진 경우(방송 시작등)
     if(currentLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== currentLiveInfo?.chatChannelId){
-        // 채팅 ID가 달라진 경우 새 채팅 채널에 접속했다는 뜻임
+        updateNotice(null); // 채널이 변경된 경우 공지는 자동으로 제거됨
         document.querySelectorAll('.message-box').forEach(element => element.remove())
     }
 
