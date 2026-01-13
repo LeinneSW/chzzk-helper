@@ -1,5 +1,5 @@
 import {showToast} from "./toast";
-import {addTTSQueue} from "./tts.js";
+import {pushTextToSpeech} from "./tts.js";
 import {addMessageBox, clearChatBox, removeMessageBox, updateLiveInfoUi, updateNotice} from './chat_ui.js'
 
 let client;
@@ -62,7 +62,7 @@ const connect = () => {
                     localStorage.setItem('enableTTS', +(message.split(' ')[1]?.toLowerCase() === 'on') + '')
                 }
                 if(connectTime < date){
-                    addTTSQueue(profile, message)
+                    pushTextToSpeech(message, profile.nickname)
                 }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
                 removeMessageBox(blind)

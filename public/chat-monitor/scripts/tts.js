@@ -50,13 +50,13 @@ function normalizeRepeatedText(text){
     return text;
 }
 
-export function addTTSQueue(profile, text){
+export function pushTextToSpeech(text, nickname = 'Administrator'){
     if(!ttsSettings.enabled){
         return;
     }
 
     if(
-        (ttsSettings.ignoreName.enabled && ttsSettings.ignoreName.regex.test(profile.nickname)) || // 닉네임 무시
+        (ttsSettings.ignoreName.enabled && ttsSettings.ignoreName.regex.test(nickname)) || // 닉네임 무시
         (ttsSettings.ignoreMessage.enabled && ttsSettings.ignoreMessage.regex.test(text)) // 메시지 무시
     ){
         return;
@@ -71,14 +71,14 @@ export function addTTSQueue(profile, text){
 }
 
 // 큐의 첫 번째 항목을 가져와 TTS 실행
-const processQueue = ()  => {
+function processQueue(){
     if(ttsQueue.length > 0 && !isPlaying){
         playTextToSpeech(ttsQueue.shift());
     }
 }
 
 // 텍스트를 음성으로 불러와 재생
-const playTextToSpeech = (text) => {
+function playTextToSpeech(text){
     let ttsUrl;
     try{
         let urlData = localStorage.getItem('ttsURL') || '';
@@ -162,7 +162,7 @@ window.addEventListener('load', () => {
             return;
         }
 
-        playTextToSpeech('TTS 활성화');
+        pushTextToSpeech('TTS 활성화');
         document.onclick = () => {};
     }
 })
