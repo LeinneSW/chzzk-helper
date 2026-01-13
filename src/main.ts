@@ -171,7 +171,7 @@ const createChattingTask = (service: ChzzkService) => {
             }
         })
         chat.on('blind', blindData => {
-            history = history.filter(value => value.includes('"date":') && value.includes(blindData.messageTime + ''));
+            history = history.filter(value => !value.includes('"date":') || !value.includes(blindData.messageTime + ''));
             for(const client of chattingSocket){
                 client.send(JSON.stringify({blind: +blindData.messageTime}))
             }
