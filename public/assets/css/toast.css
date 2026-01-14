@@ -1,4 +1,4 @@
-#toast-container {
+.toast-container{
     gap: 10px;
     position: fixed;
     inset: 0; /* 전체 영역 차지 */
@@ -11,7 +11,7 @@
 }
 
 /* ───── 각 토스트 메시지 ───── */
-.toast {
+.toast{
     pointer-events: auto;
     background: rgba(55, 55, 55, .92);
     color: #fff;
@@ -27,16 +27,16 @@
 }
 
 /* 등장 */
-@keyframes slideFadeIn {
-    to {
+@keyframes slideFadeIn{
+    to{
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
 /* 퇴장 */
-@keyframes slideFadeOut {
-    to {
+@keyframes slideFadeOut{
+    to{
         opacity: 0;
         transform: translateY(-16px) scale(.96);
     }

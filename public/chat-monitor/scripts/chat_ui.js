@@ -1,6 +1,6 @@
 import {escapeHTML, formatTime} from "./utils.js";
 import {currentLiveInfo} from "./chat.js";
-import {showToast} from "./toast.js";
+import {showToast} from "../../assets/js/toast.js";
 
 const MAX_MESSAGES = 1000;
 const HEIGHT_THRESHOLD = 8; // 스크롤 여유 픽셀

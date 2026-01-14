@@ -1,9 +1,9 @@
 export function showToast(msg){
     // 컨테이너 없으면 생성
-    let box = document.getElementById('toast-container');
+    let box = document.querySelector('.toast-container');
     if(!box){
         box = document.createElement('div');
-        box.id = 'toast-container';
+        box.className = 'toast-container';
         document.body.appendChild(box);
     }
 

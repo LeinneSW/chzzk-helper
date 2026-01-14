@@ -1,5 +1,5 @@
 import {currentLiveInfo} from "./chat.js";
-import {showToast} from "./toast.js";
+import {showToast} from "../../assets/js/toast.js";
 import {ttsSettings} from "./tts.js";
 
 const toggleState = (button) => {

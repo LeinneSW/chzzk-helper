@@ -1,4 +1,4 @@
-import {showToast} from "./toast.js";
+import {showToast} from "../../assets/js/toast.js";
 import {pushTextToSpeech} from "./tts.js";
 import {addMessageBox, clearChatBox, removeMessageBox, updateLiveInfoUi, updateNotice} from './chat_ui.js'
 
