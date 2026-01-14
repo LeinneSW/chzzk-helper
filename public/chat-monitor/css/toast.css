@@ -1,4 +1,5 @@
 #toast-container {
+    gap: 10px;
     position: fixed;
     inset: 0; /* 전체 영역 차지 */
     display: flex;
