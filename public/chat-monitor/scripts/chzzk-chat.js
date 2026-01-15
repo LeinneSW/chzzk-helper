@@ -26,11 +26,11 @@ export const connectServer = () => {
             updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
                 const {profile, message, date, colorData, emojiList, badgeList} = chat;
-                if(profile.userRoleCode === 'streamer' && message.startsWith('!tts')){
-                    ttsSettings.enabled = message.split(' ')[1]?.toLowerCase() === 'on'
-                }
                 if(connectTime < date){
                     pushTextToSpeech(message, profile.nickname)
+                    if(profile.userRoleCode === 'streamer' && message.startsWith('!tts')){
+                        ttsSettings.enabled = message.split(' ')[1]?.toLowerCase() === 'on'
+                    }
                 }
                 addMessageBox(profile, message, date, colorData, emojiList, badgeList)
             }
