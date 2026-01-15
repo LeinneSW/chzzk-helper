@@ -1,6 +1,7 @@
-import {currentLiveInfo} from "./chat.js";
+import {currentLiveInfo} from "./chzzk-chat.js";
 import {showToast} from "../../assets/js/toast.js";
-import {ttsSettings} from "./tts.js";
+import {ttsSettings} from "./setting-controller.js";
+import {toBoolean} from "./utils.js";
 
 const toggleState = (button) => {
     for(const child of button.children){
@@ -8,12 +9,12 @@ const toggleState = (button) => {
     }
 }
 
-window.addEventListener("load", () => {
+export function initNavbar(){
     // 토글 버튼 초기화
     const buttonList = document.querySelectorAll('.button.toggle');
     buttonList.forEach(button => {
         const saveName = button.dataset.saveName
-        if(saveName && localStorage.getItem(saveName) !== '0'){
+        if(saveName && toBoolean(localStorage.getItem(saveName))){
             toggleState(button)
         }
         button.addEventListener('click', () => toggleState(button))
@@ -76,4 +77,4 @@ window.addEventListener("load", () => {
             modal.classList.remove('show');
         }
     }
-})
+}

@@ -1,37 +1,9 @@
-import {toBoolean, createSetting} from "./utils.js";
+import {ttsSettings} from "./setting-controller.js";
+
+const EMOJI_REGEX = /\p{Extended_Pictographic}/gu; // 이모지 구분 정규식
 
 const ttsQueue = [];
 let isPlaying = false;
-const emojiRegex = /\p{Extended_Pictographic}/gu; // 이모지 구분 정규식
-export const ttsSettings = {
-    get enabled(){
-        return toBoolean(localStorage.getItem('enableTTS'))
-    },
-    set enabled(value){
-        localStorage.setItem('enableTTS', toBoolean(value) + '');
-    },
-
-    get maximumPlayTime(){
-        return +localStorage.getItem('ttsMaxTime') || 0
-    },
-    set maximumPlayTime(value){
-        localStorage.setItem('ttsMaxTime', (+value || 0) + '');
-    },
-
-    get volume(){
-        return +localStorage.getItem('ttsVolume') || 100;
-    },
-    set volume(value){
-        localStorage.setItem('ttsVolume', (+value || 0) + '');
-    },
-
-    // 닉네임 무시 (해당되는 닉네임의 채팅 안읽음)
-    ignoreName: createSetting('ttsIgnoreName', /^.*(봇|bot)$/i),
-    // 메시지 무시 (해당되는 메시지 안읽음)
-    ignoreMessage: createSetting('ttsIgnoreMessage', /^[!$/].*$/u),
-    // 메시지 필터링 (특정 문자를 ''로 치환)
-    filterMessage: createSetting('ttsFilterMessage', /\p{Extended_Pictographic}|\{:.*:\}/gu),
-};
 
 // 반복 단어 파악(도배 방지를 위해 추가)
 function normalizeRepeatedText(text){
@@ -43,7 +15,7 @@ function normalizeRepeatedText(text){
             ++count;
         }
         if(count > 3 && count * substring.length === text.length){
-            const isEmoji = emojiRegex.test(substring);
+            const isEmoji = EMOJI_REGEX.test(substring);
             return substring.repeat(isEmoji || substring.length >= 3 ? 3 : Math.min(count, 8));
         }
     }
@@ -153,14 +125,3 @@ const playTextToSpeech = (text) => {
         }, startFadeTime * 1000);
     });
 }
-
-window.addEventListener('load', () => {
-    document.onclick = () => {
-        if(localStorage.getItem('enableTTS') === '0'){
-            return;
-        }
-
-        pushTextToSpeech('TTS 활성화');
-        document.onclick = () => {};
-    }
-})

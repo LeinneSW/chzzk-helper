@@ -1,3 +1,36 @@
+import {createSetting, toBoolean} from "./utils.js";
+
+export const ttsSettings = {
+    get enabled(){
+        return toBoolean(localStorage.getItem('enableTTS'))
+    },
+    set enabled(value){
+        debugger;
+        localStorage.setItem('enableTTS', toBoolean(value) + '');
+    },
+
+    get maximumPlayTime(){
+        return +localStorage.getItem('ttsMaxTime') || 0
+    },
+    set maximumPlayTime(value){
+        localStorage.setItem('ttsMaxTime', (+value || 0) + '');
+    },
+
+    get volume(){
+        return +localStorage.getItem('ttsVolume') || 100;
+    },
+    set volume(value){
+        localStorage.setItem('ttsVolume', (+value || 0) + '');
+    },
+
+    // 닉네임 무시 (해당되는 닉네임의 채팅 안읽음)
+    ignoreName: createSetting('ttsIgnoreName', /^.*(봇|bot)$/i),
+    // 메시지 무시 (해당되는 메시지 안읽음)
+    ignoreMessage: createSetting('ttsIgnoreMessage', /^[!$/].*$/u),
+    // 메시지 필터링 (특정 문자를 ''로 치환)
+    filterMessage: createSetting('ttsFilterMessage', /\p{Extended_Pictographic}|\{:.*:\}/gu),
+};
+
 const showTooltip = (tipElement) => {
     const description = tipElement.dataset.description
     if(!description){
@@ -49,7 +82,7 @@ const updateCssStyle = (element) => {
     }
 }
 
-window.addEventListener('load', () => {
+export function initSettings(){
     document.querySelectorAll('.settings .slider-container > .slider').forEach(slider => {
         const saveName = slider.dataset.saveName
         slider.value = (saveName && localStorage.getItem(saveName)) || slider.value
@@ -110,4 +143,4 @@ window.addEventListener('load', () => {
         tipElement.addEventListener('mouseenter', () => showTooltip(tipElement))
         tipElement.addEventListener('mouseleave', () => hideTooltip(tipElement))
     }
-})
+}

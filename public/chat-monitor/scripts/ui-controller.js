@@ -1,6 +1,6 @@
 import {escapeHTML, formatTime} from "./utils.js";
-import {currentLiveInfo} from "./chat.js";
 import {showToast} from "../../assets/js/toast.js";
+import {currentLiveInfo, sendChat} from "./chzzk-chat.js";
 
 const MAX_MESSAGES = 1000;
 const HEIGHT_THRESHOLD = 8; // 스크롤 여유 픽셀
@@ -151,6 +151,35 @@ export const updateNotice = (notice) => {
     }
 }
 
+// 채널명, 프사 취득하기
+export function updateStreamerInfo(){
+    let errorCount = 0;
+    function getUserInfo(){
+        fetch('/user-info')
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json()
+            })
+            .then(user => {
+                const nickname = document.getElementById('streamer-name');
+                const avatar = document.getElementById('streamer-avatar');
+                const defaultURL = avatar.src;
+                avatar.src = user.profileImageUrl || defaultURL;
+                avatar.onerror = () => avatar.src = defaultURL;
+                nickname.textContent = user.nickname;
+            })
+            .catch(err => {
+                ++errorCount;
+                if(errorCount < 10){
+                    setTimeout(getUserInfo, 1000)
+                }else{
+                    console.error(err);
+                }
+            })
+    }
+    getUserInfo();
+}
+
 export const updateLiveInfoUi = (newLiveInfo) => {
     // 채팅 ID가 달라진 경우(방송 시작등)
     if(currentLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== currentLiveInfo?.chatChannelId){
@@ -186,6 +215,12 @@ export const clearChatBox = () => {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    const messageInput = document.getElementById('message-input');
+    messageInput.addEventListener('keydown', event => event.key === 'Enter' && sendChat(event.target))
+
+    const sendBtn = document.getElementById('send-button')
+    sendBtn.addEventListener('click', () => sendChat(document.getElementById(`message-input`)))
+
     const chat = document.getElementById('chat-container');
     chat.addEventListener('scroll', updateScrollButton);
 
