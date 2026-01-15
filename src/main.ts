@@ -8,6 +8,7 @@ import {convertColorCode, getFollowerData, initNicknameColorData} from "./utils/
 import electronShortCut from 'electron-localshortcut';
 import windowStateKeeper from "electron-window-state";
 import {ChzzkChat} from "chzzk";
+import {createChzzkRouter} from "./routes/chzzk";
 
 const voteSocket: WebSocket[] = []
 const createVoteTask = (service: ChzzkService) => {
@@ -280,62 +281,8 @@ const startChzzkService = async (session: Electron.Session): Promise<boolean> =>
         return true
     }
 
-    // 웹 end-point 정의
-    service.app.get('/user-info', async (_, res) => {
-        res.send(await service.client.user());
-    })
-    service.app.all(/^\/fetch\/.*/, async (req, res) => {
-        // TODO: proxy 기능 구현 예정
-        console.log('req.url: ', req.path)
-        res.send({});
-    })
-    service.app.post('/notice', async (req, res) => {
-        try{
-            const {channelId, messageTime, messageUserIdHash, streamingChannelId} = req.body;
-            const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    channelId,
-                    chatType: "STREAMING",
-                    messageTime,
-                    messageUserIdHash,
-                    streamingChannelId
-                })
-            });
-            if(reqNotice.ok){
-                const jsonData = await reqNotice.json();
-                return res.status(jsonData.code || 500).json(jsonData);
-            }
-        }catch(e){
-            console.error(e);
-        }
-        res.sendStatus(500);
-    })
-    service.app.delete('/notice', async (req, res) => {
-        try{
-            const {channelId} = req.body;
-            const reqNotice = await service.client.fetch('https://comm-api.game.naver.com/nng_main/v1/chats/notices', {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    channelId,
-                    chatType: "STREAMING",
-                })
-            });
-            if(reqNotice.ok){
-                const jsonData = await reqNotice.json();
-                return res.status(jsonData.code || 500).json(jsonData);
-            }
-        }catch(e){
-            console.error(e);
-        }
-        res.sendStatus(500);
-    })
+    // 웹 end-point 정의 (Router 사용)
+    service.app.use('/', createChzzkRouter(service));
 
     const windowState = windowStateKeeper({
         defaultWidth: 1600,
