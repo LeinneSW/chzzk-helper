@@ -180,9 +180,9 @@ export function updateStreamerInfo(){
     getUserInfo();
 }
 
-export const updateLiveInfoUi = (newLiveInfo) => {
+export const updateLiveInfo = (beforeLiveInfo, newLiveInfo) => {
     // 채팅 ID가 달라진 경우(방송 시작등)
-    if(currentLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== currentLiveInfo?.chatChannelId){
+    if(beforeLiveInfo?.chatChannelId && newLiveInfo.chatChannelId && newLiveInfo.chatChannelId !== beforeLiveInfo?.chatChannelId){
         updateNotice(null); // 채널이 변경된 경우 공지는 자동으로 제거됨
         document.querySelectorAll('.message-box').forEach(element => element.remove())
     }
@@ -215,11 +215,13 @@ export const clearChatBox = () => {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    // -------------- TODO: HACK --------------
     const messageInput = document.getElementById('message-input');
     messageInput.addEventListener('keydown', event => event.key === 'Enter' && sendChat(event.target))
 
     const sendBtn = document.getElementById('send-button')
     sendBtn.addEventListener('click', () => sendChat(document.getElementById(`message-input`)))
+    // -------------- TODO: HACK --------------
 
     const chat = document.getElementById('chat-container');
     chat.addEventListener('scroll', updateScrollButton);

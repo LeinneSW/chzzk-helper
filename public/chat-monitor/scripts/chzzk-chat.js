@@ -1,10 +1,13 @@
 import {showToast} from "../../assets/js/toast.js";
-import {pushTextToSpeech} from "./text-to-speech.js";
-import {addMessageBox, clearChatBox, removeMessageBox, updateLiveInfoUi, updateNotice} from './ui-controller.js'
-import {ttsSettings} from "./setting-controller.js";
+import {clearChatBox, updateNotice} from "./ui-controller.js";
 
 let client;
 export let currentLiveInfo;
+
+export const onChatCallbacks = [];
+export const onBlindCallbacks = [];
+export const onNoticeCallbacks = [];
+export const onLiveInfoCallbacks = [];
 
 export const connectServer = () => {
     if(client?.readyState === WebSocket.OPEN){
@@ -14,27 +17,26 @@ export const connectServer = () => {
     let wsUrl = window.localStorage.getItem('wsURL') || location.host;
     client = new WebSocket(`ws://${wsUrl}/ws`)
     client.onopen = () => {
+        // -------------- TODO: HACK --------------
         clearChatBox()
         updateNotice(null)
+        // -------------- TODO: HACK --------------
         connectTime = Date.now()
         client.send(`CHATTING`)
     }
     client.onmessage = e => {
         try{
             const {chat, blind, notice, liveInfo} = JSON.parse(e.data.toString());
-            removeMessageBox(blind)
-            updateLiveInfo(liveInfo);
             if(chat && typeof chat === 'object'){
-                const {profile, message, date, colorData, emojiList, badgeList} = chat;
-                if(connectTime < date){
-                    pushTextToSpeech(message, profile.nickname)
-                    if(profile.userRoleCode === 'streamer' && message.startsWith('!tts')){
-                        ttsSettings.enabled = message.split(' ')[1]?.toLowerCase() === 'on'
-                    }
-                }
-                addMessageBox(profile, message, date, colorData, emojiList, badgeList)
+                onChatCallbacks.forEach(func => func(chat, connectTime));
             }
-            updateNotice(notice)
+            if(blind) onBlindCallbacks.forEach(func => func(blind));
+            onNoticeCallbacks.forEach(func => func(notice));
+            if(liveInfo) {
+                const before = currentLiveInfo;
+                currentLiveInfo = liveInfo;
+                onLiveInfoCallbacks.forEach(func => func(before, liveInfo));
+            }
         }catch(e){
             console.error(e);
         }
@@ -55,13 +57,4 @@ export async function sendChat(input){
     client.send(JSON.stringify({type: `SEND_MESSAGE`, message: input.value}))
     input.value = ''
     input.focus()
-}
-
-const updateLiveInfo = (newLiveInfo) => {
-    if(!newLiveInfo || typeof newLiveInfo !== 'object'){
-        return;
-    }
-
-    updateLiveInfoUi(newLiveInfo)
-    currentLiveInfo = newLiveInfo;
 }

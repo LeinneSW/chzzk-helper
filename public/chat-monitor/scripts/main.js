@@ -1,10 +1,25 @@
 import {pushTextToSpeech} from "./text-to-speech.js";
-import {connectServer} from "./chzzk-chat.js";
-import {updateStreamerInfo} from "./ui-controller.js";
+import {connectServer, onBlindCallbacks, onChatCallbacks, onLiveInfoCallbacks, onNoticeCallbacks} from "./chzzk-chat.js";
+import {addMessageBox, removeMessageBox, updateLiveInfo, updateNotice, updateStreamerInfo} from "./ui-controller.js";
 import {initSettings, ttsSettings} from "./setting-controller.js";
 import {initNavbar} from "./navbar.js";
 
 window.addEventListener('load', () => {
+    onChatCallbacks.push((chat, connectTime) => {
+        const {profile, message, date, colorData, emojiList, badgeList} = chat;
+        if(connectTime < date){
+            pushTextToSpeech(message, profile.nickname);
+            const [command, ...args] = message.trim().split(' ');
+            if(profile.userRoleCode === 'streamer' && command === '!tts'){
+                ttsSettings.enabled = args[1]?.toLowerCase() === 'on'
+            }
+        }
+        addMessageBox(profile, message, date, colorData, emojiList, badgeList);
+    })
+    onNoticeCallbacks.push(updateNotice)
+    onBlindCallbacks.push(removeMessageBox)
+    onLiveInfoCallbacks.push(updateLiveInfo)
+
     initNavbar();
     initSettings();
     connectServer(); // chzzk-helper server 접속

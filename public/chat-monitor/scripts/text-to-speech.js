@@ -50,7 +50,7 @@ function processQueue(){
 }
 
 // 텍스트를 음성으로 불러와 재생
-const playTextToSpeech = (text) => {
+function playTextToSpeech(text){
     let ttsUrl;
     try{
         let urlData = localStorage.getItem('ttsURL') || '';
