@@ -9,12 +9,6 @@ import {ChzzkEvents} from "./ChzzkEvents";
 import {LiveInfo} from "./LiveInfo";
 
 export class ChzzkService{
-    readonly client: ChzzkClient
-
-    readonly app = express();
-    readonly server: Server;
-    readonly socket: WebSocketServer;
-
     private _chat: ChzzkChat | undefined
     private _liveInfo: LiveInfo = {
         title: '',
@@ -28,10 +22,18 @@ export class ChzzkService{
             name: '',
         }
     };
+
     private readonly emitter = mitt<ChzzkEvents>()
+
+    readonly client: ChzzkClient
+
+    readonly app = express();
+    readonly server: Server;
+    readonly socket: WebSocketServer;
 
     // event listener
     readonly on = this.emitter.on;
+
 
     constructor(nidAuth: string, nidSession: string){
         this.client = new ChzzkClient({nidAuth, nidSession})
@@ -73,12 +75,23 @@ export class ChzzkService{
             if(this._chat?.connected){
                 await this._chat.disconnect()
             }
-            const chatClient = this.client.chat(liveStatus.chatChannelId);
-            this._chat = chatClient
-            this.emitter.emit('chat', chatClient)
 
+            const chatClient = this.client.chat(liveStatus.chatChannelId);
             chatClient.on('connect', () => chatClient.requestRecentChat(100))
-            chatClient.connect().catch((e) => console.error(e))
+            chatClient.on('disconnect', () => {
+                if(this._chat !== chatClient) return
+                this._liveInfo.channelId = '';
+                void this.refreshLiveStatus();
+            })
+            chatClient.connect()
+                .then(() => {
+                    this._chat = chatClient
+                    this.emitter.emit('chat', chatClient)
+                })
+                .catch((e) => {
+                    console.error(e)
+                    this._liveInfo.channelId = '';
+                })
         }
 
         const newLiveInfo = {
